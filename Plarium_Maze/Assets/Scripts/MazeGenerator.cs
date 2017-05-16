@@ -13,12 +13,16 @@ namespace Assets.Scripts
             public int XSize;
             public int YSize;
             public int CellsCount;
+            public Vector2 InitialPos;
+            public float MazeWallLength;
 
             public Maze(int xsize, int ysize)
             {
                 XSize = xsize;
                 YSize = ysize;
                 CellsCount = XSize*YSize;
+                MazeWallLength = WallLength;
+                InitialPos = new Vector2(-(XSize * MazeWallLength / 2), -(YSize * MazeWallLength / 2));
             }
         }
 
@@ -56,7 +60,6 @@ namespace Assets.Scripts
         public int ySize = 5;
 
         private const float WallLength = 1;
-        private Vector3 _initialPos;
         private GameObject _wallHolder;
         private Cell[] _cells;
         private int _currentCell;
@@ -85,8 +88,6 @@ namespace Assets.Scripts
             };
             _wallHolder.transform.Rotate(Vector3.up);
 
-            _initialPos = new Vector3(-(float)xSize / 2 + WallLength / 2, -(float)ySize / 2 + WallLength);
-
             Vector3 wallCreatePosition;
             GameObject tempWall;
 
@@ -95,7 +96,7 @@ namespace Assets.Scripts
             {
                 for (var j = 0; j <= xSize; j++)
                 {
-                    wallCreatePosition = new Vector3(_initialPos.x + j * WallLength - WallLength / 2,  _initialPos.y + i * WallLength - WallLength / 2);
+                    wallCreatePosition = new Vector3(maze.InitialPos.x + j * WallLength, maze.InitialPos.y + i * WallLength + WallLength / 2);
                     var wallObject = new Wall(wall);
                     tempWall = wallObject.CreateWall(wallCreatePosition);
                     tempWall.transform.parent = _wallHolder.transform;
@@ -107,7 +108,7 @@ namespace Assets.Scripts
             {
                 for (var j = 0; j < xSize; j++)
                 {
-                    wallCreatePosition = new Vector3(_initialPos.x + j * WallLength, _initialPos.y + i * WallLength - WallLength);
+                    wallCreatePosition = new Vector3(maze.InitialPos.x + j * WallLength + WallLength / 2, maze.InitialPos.y + i * WallLength);
                     var wallObject = new Wall(wall);
                     tempWall = wallObject.CreateWall(wallCreatePosition, false);
                     tempWall.transform.parent = _wallHolder.transform;
