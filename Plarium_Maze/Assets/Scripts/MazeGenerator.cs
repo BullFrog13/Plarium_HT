@@ -20,7 +20,6 @@ namespace Assets.Scripts
                 YSize = ysize;
                 CellsCount = XSize*YSize;
             }
-
         }
 
         [Serializable]
@@ -49,7 +48,6 @@ namespace Assets.Scripts
                     ? Quaternion.identity
                     : Quaternion.Euler(0, 0, 90));
             }
-            
         }
 
         public Maze maze;
