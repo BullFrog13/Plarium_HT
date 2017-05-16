@@ -78,8 +78,9 @@ namespace Assets.Scripts
             _rb.velocity = new Vector2(horizontalSpeed, verticalSpeed);
         }
 
-        private void OnCollisionEnter2D(Collision2D other)
+        private void OnTriggerEnter2D(Collider2D other)
         {
+            Debug.Log("Hello");
             if (other.gameObject.tag.Equals("coin"))
             {
                 _gameManager.CurrentCointCount--;
