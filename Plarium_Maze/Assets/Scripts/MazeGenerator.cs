@@ -1,0 +1,276 @@
+﻿using System;
+using System.Collections.Generic;
+using UnityEngine;
+using Random = UnityEngine.Random;
+
+namespace Assets.Scripts
+{
+    public class MazeGenerator : MonoBehaviour
+    {
+        [Serializable]
+        public class Maze
+        {
+            public int XSize;
+            public int YSize;
+            public int CellsCount;
+
+            public Maze(int xsize, int ysize)
+            {
+                XSize = xsize;
+                YSize = ysize;
+                CellsCount = XSize*YSize;
+            }
+
+        }
+
+        [Serializable]
+        public class Cell
+        {
+            public bool Visited;
+
+            public GameObject North;
+            public GameObject East;
+            public GameObject West;
+            public GameObject South;
+        }
+
+        private class Wall
+        {
+            private readonly GameObject _wallGameObject;
+
+            public Wall(GameObject wall)
+            {
+                _wallGameObject = wall;
+            }
+
+            public GameObject CreateWall(Vector3 pos, bool isHorizontal = true)
+            {
+                return Instantiate(_wallGameObject, pos, isHorizontal
+                    ? Quaternion.identity
+                    : Quaternion.Euler(0, 0, 90));
+            }
+            
+        }
+
+        public Maze maze;
+        public GameObject wall;
+        public int xSize = 5;
+        public int ySize = 5;
+
+        private const float WallLength = 1;
+        private Vector3 _initialPos;
+        private GameObject _wallHolder;
+        private Cell[] _cells;
+        private int _currentCell;
+        private int _visitedCells;
+        private bool _buildStarted;
+
+        private int _currentNeighbourCell;
+
+        private List<int> _remainingCells;
+        private int _backingupCell;
+        private int _wallToBreak;
+        private const int WallCountInCell = 4;
+
+        private void Start()
+        {
+            maze = new Maze(xSize, ySize);
+            _remainingCells = new List<int>();
+            CreateWalls();
+        }
+
+        private void CreateWalls()
+        {
+            _wallHolder = new GameObject
+            {
+                name = "Maze Structure",
+            };
+            _wallHolder.transform.Rotate(Vector3.up);
+
+            _initialPos = new Vector3(-(float)xSize / 2 + WallLength / 2, -(float)ySize / 2 + WallLength);
+
+            Vector3 wallCreatePosition;
+            GameObject tempWall;
+
+            //For x Axis
+            for (var i = 0; i < ySize; i++)
+            {
+                for (var j = 0; j <= xSize; j++)
+                {
+                    wallCreatePosition = new Vector3(_initialPos.x + j * WallLength - WallLength / 2,  _initialPos.y + i * WallLength - WallLength / 2);
+                    var wallObject = new Wall(wall);
+                    tempWall = wallObject.CreateWall(wallCreatePosition);
+                    tempWall.transform.parent = _wallHolder.transform;
+                }
+            }
+
+            //For y Axis
+            for (var i = 0; i <= ySize; i++)
+            {
+                for (var j = 0; j < xSize; j++)
+                {
+                    wallCreatePosition = new Vector3(_initialPos.x + j * WallLength, _initialPos.y + i * WallLength - WallLength);
+                    var wallObject = new Wall(wall);
+                    tempWall = wallObject.CreateWall(wallCreatePosition, false);
+                    tempWall.transform.parent = _wallHolder.transform;
+                }
+            }
+
+            CreateCells();
+        }
+
+        private void CreateCells()
+        {
+            var wallsCount = _wallHolder.transform.childCount;
+            var allWalls = new GameObject[wallsCount];
+            _cells = new Cell[maze.CellsCount];
+
+            var leftRightWallCounter = 0;
+            var childProcess = 0;
+            var mazeEndCheck = 0;
+
+            for (var i = 0; i < wallsCount; i++)
+            {
+                allWalls[i] = _wallHolder.transform.GetChild(i).gameObject;
+            }
+
+            for (var i = 0; i < _cells.Length; i++)
+            {
+                _cells[i] = new Cell
+                {
+                    East = allWalls[leftRightWallCounter],
+                    South = allWalls[childProcess + (xSize + 1) * ySize]
+                };
+
+                if (mazeEndCheck == xSize)
+                {
+                    leftRightWallCounter += 2;
+                    mazeEndCheck = 0;
+                }
+                else
+                {
+                    leftRightWallCounter++;
+                }
+
+                mazeEndCheck++;
+                childProcess++;
+
+                _cells[i].West = allWalls[leftRightWallCounter];
+                _cells[i].North = allWalls[childProcess + (xSize + 1) * ySize + xSize - 1];
+            }
+            CreateMaze();
+        }
+
+        private void CreateMaze()
+        {
+            while (_visitedCells < maze.CellsCount)
+            {
+                if (_buildStarted)
+                {
+                    GiveMeNeighbour();
+                    if (!_cells[_currentNeighbourCell].Visited && _cells[_currentCell].Visited)
+                    {
+                        BreakWall();
+                        _cells[_currentNeighbourCell].Visited = true;
+                        _visitedCells++;
+                        _remainingCells.Add(_currentCell);
+                        _currentCell = _currentNeighbourCell;
+                        if (_remainingCells.Count > 0)
+                        {
+                            _backingupCell = _remainingCells.Count - 1;
+                        }
+                    }
+                }
+                else
+                {
+                    _currentCell = Random.Range(0, maze.CellsCount);
+                    _cells[_currentCell].Visited = true;
+                    _visitedCells++;
+                    _buildStarted = true;
+                }
+            }
+        }
+
+        private void BreakWall()
+        {
+            switch (_wallToBreak)
+            {
+                case 1:
+                    Destroy(_cells[_currentCell].North);
+                    break;
+                case 2:
+                    Destroy(_cells[_currentCell].East);
+                    break;
+                case 3:
+                    Destroy(_cells[_currentCell].West);
+                    break;
+                case 4:
+                    Destroy(_cells[_currentCell].South);
+                    break;
+            }
+        }
+
+        private void GiveMeNeighbour()
+        {
+            var length = 0;
+            var connectingWall = new int[WallCountInCell];
+            var neighbours = new int[WallCountInCell];
+            var check = ((_currentCell + 1)/xSize - 1) * maze.XSize + xSize;
+
+            if (_currentCell + 1 < maze.CellsCount && (_currentCell + 1) != check)
+            {
+                if (!_cells[_currentCell + 1].Visited)
+                {
+                    neighbours[length] = _currentCell + 1;
+                    connectingWall[length] = 3;
+                    length++;
+                }
+            }
+
+            if (_currentCell - 1 >= 0 && _currentCell != check)
+            {
+                if (!_cells[_currentCell - 1].Visited)
+                {
+                    neighbours[length] = _currentCell - 1;
+                    connectingWall[length] = 2;
+                    length++;
+                }
+            }
+
+            if (_currentCell + xSize < maze.CellsCount)
+            {
+                if (!_cells[_currentCell + xSize].Visited)
+                {
+                    neighbours[length] = _currentCell + xSize;
+                    connectingWall[length] = 1;
+                    length++;
+                }
+            }
+
+            if (_currentCell - xSize >= 0)
+            {
+                if (!_cells[_currentCell - xSize].Visited)
+                {
+                    neighbours[length] = _currentCell - xSize;
+                    connectingWall[length] = 4;
+                    length++;
+                }
+            }
+
+            if (length != 0)
+            {
+                var theChosenOne = Random.Range(0, length);
+                _currentNeighbourCell = neighbours[theChosenOne];
+                _wallToBreak = connectingWall[theChosenOne];
+            }
+            else
+            {
+                if (_backingupCell > 0)
+                {
+                    _currentCell = _remainingCells[_backingupCell];
+                    _backingupCell--;
+                }
+            }
+        }
+    }
+}
