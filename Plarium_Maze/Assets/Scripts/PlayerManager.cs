@@ -12,7 +12,6 @@ namespace Assets.Scripts
         private Rigidbody2D _rb;
         private GameManager _gameManager;
 
-
         private void Start()
         {
             _gameManager = GameObject.Find("Game Manager").GetComponent<GameManager>();
@@ -80,10 +79,10 @@ namespace Assets.Scripts
 
         private void OnTriggerEnter2D(Collider2D other)
         {
-            Debug.Log("Hello");
             if (other.gameObject.tag.Equals("coin"))
             {
                 _gameManager.CurrentCointCount--;
+                _gameManager.CollectedCoins++;
                 Destroy(other.gameObject);
             }
         }
