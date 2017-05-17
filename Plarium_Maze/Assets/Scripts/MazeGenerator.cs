@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -76,6 +77,16 @@ namespace Assets.Scripts
 
         private void Start()
         {
+            /*int layer = GameObjectUtility.GetNavMeshAreaFromName("Not Walkable");
+            GameObject g = Selection.activeGameObject;
+            StaticEditorFlags staticFlags = GameObjectUtility.GetStaticEditorFlags(g);
+            if (staticFlags  != StaticEditorFlags.NavigationStatic)
+            {
+                staticFlags = StaticEditorFlags.NavigationStatic;
+                GameObjectUtility.SetStaticEditorFlags(g, staticFlags);
+            }
+            GameObjectUtility.SetNavMeshArea(g, layer);*/
+
             maze = new Maze(xSize, ySize);
             _remainingCells = new List<int>();
             CreateWalls();

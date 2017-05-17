@@ -9,6 +9,7 @@ namespace Assets.Scripts
         public float Speed;
 
         private bool _facingRight;
+        private bool _followPlayer;
         private float _speedX;
         private float _speedY;
         private Rigidbody2D _rb;
@@ -17,118 +18,126 @@ namespace Assets.Scripts
         {
             _rb = GetComponent<Rigidbody2D>();
             _facingRight = true;
+            _followPlayer = true;
             _speedX = 1;
         }
 
         private void FixedUpdate()
         {
-            if (_speedX == 1)
+            /*if (_followPlayer)
             {
-                var hit = Physics2D.Raycast(transform.position, Vector2.right, 0.5f);
-                if (hit.collider != null && hit.transform.tag == "wall")
-                {
-                    var choosenDirection = ChooseRandomDirection();
-                    switch (choosenDirection)
-                    {
-                        case 0:
-                            _speedX = 0;
-                            _speedY = 1;
-                            break;
-                        case 1:
-                            _speedX = -1;
-                            _speedY = 0;
-                            break;
-                        case 2:
-                            _speedX = 1;
-                            _speedY = 0;
-                            break;
-                        case 3:
-                            _speedX = 0;
-                            _speedY = -1;
-                            break;
-                    }
-                }
+
             }
-            else if (_speedX == -1)
-            {
-                var hit = Physics2D.Raycast(transform.position, Vector2.left, 0.5f);
-                if (hit.collider != null && hit.transform.tag == "wall")
+            else
+            {*/
+                if (_speedX == 1)
                 {
-                    var choosenDirection = ChooseRandomDirection();
-                    switch (choosenDirection)
+                    var hit = Physics2D.Raycast(transform.position, Vector2.right, 0.5f);
+                    if (hit.collider != null && hit.transform.tag == "wall")
                     {
-                        case 0:
-                            _speedX = 0;
-                            _speedY = 1;
-                            break;
-                        case 1:
-                            _speedX = -1;
-                            _speedY = 0;
-                            break;
-                        case 2:
-                            _speedX = 1;
-                            _speedY = 0;
-                            break;
-                        case 3:
-                            _speedX = 0;
-                            _speedY = -1;
-                            break;
+                        var choosenDirection = ChooseRandomDirection();
+                        switch (choosenDirection)
+                        {
+                            case 0:
+                                _speedX = 0;
+                                _speedY = 1;
+                                break;
+                            case 1:
+                                _speedX = -1;
+                                _speedY = 0;
+                                break;
+                            case 2:
+                                _speedX = 1;
+                                _speedY = 0;
+                                break;
+                            case 3:
+                                _speedX = 0;
+                                _speedY = -1;
+                                break;
+                        }
                     }
                 }
-            }
-            else if (_speedY == 1)
-            {
-                var hit = Physics2D.Raycast(transform.position, Vector2.up, 0.5f);
-                if (hit.collider != null && hit.transform.tag == "wall")
+                else if (_speedX == -1)
                 {
-                    var choosenDirection = ChooseRandomDirection();
-                    switch (choosenDirection)
+                    var hit = Physics2D.Raycast(transform.position, Vector2.left, 0.5f);
+                    if (hit.collider != null && hit.transform.tag == "wall")
                     {
-                        case 0:
-                            _speedX = 0;
-                            _speedY = 1;
-                            break;
-                        case 1:
-                            _speedX = -1;
-                            _speedY = 0;
-                            break;
-                        case 2:
-                            _speedX = 1;
-                            _speedY = 0;
-                            break;
-                        case 3:
-                            _speedX = 0;
-                            _speedY = -1;
-                            break;
+                        var choosenDirection = ChooseRandomDirection();
+                        switch (choosenDirection)
+                        {
+                            case 0:
+                                _speedX = 0;
+                                _speedY = 1;
+                                break;
+                            case 1:
+                                _speedX = -1;
+                                _speedY = 0;
+                                break;
+                            case 2:
+                                _speedX = 1;
+                                _speedY = 0;
+                                break;
+                            case 3:
+                                _speedX = 0;
+                                _speedY = -1;
+                                break;
+                        }
                     }
                 }
-            }
-            else if (_speedY == -1)
-            {
-                var hit = Physics2D.Raycast(transform.position, Vector2.down, 0.5f);
-                if (hit.collider != null && hit.transform.tag == "wall")
+                else if (_speedY == 1)
                 {
-                    var choosenDirection = ChooseRandomDirection();
-                    switch (choosenDirection)
+                    var hit = Physics2D.Raycast(transform.position, Vector2.up, 0.5f);
+                    if (hit.collider != null && hit.transform.tag == "wall")
                     {
-                        case 0:
-                            _speedX = 0;
-                            _speedY = 1;
-                            break;
-                        case 1:
-                            _speedX = -1;
-                            _speedY = 0;
-                            break;
-                        case 2:
-                            _speedX = 1;
-                            _speedY = 0;
-                            break;
-                        case 3:
-                            _speedX = 0;
-                            _speedY = -1;
-                            break;
+                        var choosenDirection = ChooseRandomDirection();
+                        switch (choosenDirection)
+                        {
+                            case 0:
+                                _speedX = 0;
+                                _speedY = 1;
+                                break;
+                            case 1:
+                                _speedX = -1;
+                                _speedY = 0;
+                                break;
+                            case 2:
+                                _speedX = 1;
+                                _speedY = 0;
+                                break;
+                            case 3:
+                                _speedX = 0;
+                                _speedY = -1;
+                                break;
+                        }
                     }
                 }
+                else if (_speedY == -1)
+                {
+                    var hit = Physics2D.Raycast(transform.position, Vector2.down, 0.5f);
+                    if (hit.collider != null && hit.transform.tag == "wall")
+                    {
+                        var choosenDirection = ChooseRandomDirection();
+                        switch (choosenDirection)
+                        {
+                            case 0:
+                                _speedX = 0;
+                                _speedY = 1;
+                                break;
+                            case 1:
+                                _speedX = -1;
+                                _speedY = 0;
+                                break;
+                            case 2:
+                                _speedX = 1;
+                                _speedY = 0;
+                                break;
+                            case 3:
+                                _speedX = 0;
+                                _speedY = -1;
+                                break;
+                        }
+                    }
+                //}
             }
             FlipZombie();
             MoveZombie(_speedX, _speedY);
