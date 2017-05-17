@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using UnityEditor;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -14,7 +13,7 @@ namespace Assets.Scripts
             public int XSize;
             public int YSize;
             public int CellsCount;
-            public Vector2 InitialPos;
+            public Vector3 InitialPos;
             public float MazeWallLength;
 
             public Maze(int xsize, int ysize)
@@ -27,8 +26,7 @@ namespace Assets.Scripts
             }
         }
 
-        [Serializable]
-        public class Cell
+        private class Cell
         {
             public bool Visited;
 
@@ -58,6 +56,8 @@ namespace Assets.Scripts
         public Maze maze;
         public GameObject wall;
         public GameObject Floor;
+        public GameObject NavFloor;
+        public GameObject NavWall;
         public int xSize = 5;
         public int ySize = 5;
 
@@ -74,6 +74,7 @@ namespace Assets.Scripts
         private int _backingupCell;
         private int _wallToBreak;
         private const int WallCountInCell = 4;
+        private bool _updateWasCalled;
 
         private void Start()
         {
@@ -91,6 +92,17 @@ namespace Assets.Scripts
             _remainingCells = new List<int>();
             CreateWalls();
             CreateFloor();
+            Create3DNavPlane();
+        }
+
+        private void Update()
+        {
+            if (!_updateWasCalled)
+            {
+                Create3DNavWalls();
+            }
+            _updateWasCalled = true;
+
         }
 
         private void CreateWalls()
@@ -99,7 +111,6 @@ namespace Assets.Scripts
             {
                 name = "Maze Structure",
             };
-            //_wallHolder.transform.Rotate(Vector3.up);
 
             Vector3 wallCreatePosition;
             GameObject tempWall;
@@ -287,14 +298,31 @@ namespace Assets.Scripts
 
         private void CreateFloor()
         {
-            for (int i = 0; i < xSize; i++)
+            for (var i = 0; i < xSize; i++)
             {
-                for (int j = 0; j < ySize; j++)
+                for (var j = 0; j < ySize; j++)
                 {
                     var floorCreatePosition = new Vector3(maze.InitialPos.x + j * WallLength + WallLength / 2, 0, maze.InitialPos.y + i * WallLength + WallLength / 2);
                     var tempFloor = Instantiate(Floor, floorCreatePosition, Quaternion.AngleAxis(90, Vector3.right));
                     tempFloor.transform.parent = _wallHolder.transform;
                 }
+            }
+        }
+
+        private void Create3DNavPlane()
+        {
+            var navFloorPosition = new Vector3(maze.InitialPos.x + maze.XSize / 2, -1, maze.InitialPos.y + maze.YSize / 2);
+            Instantiate(NavFloor, navFloorPosition, Quaternion.identity);
+        }
+
+        private void Create3DNavWalls()
+        {
+            var created2DWall = GameObject.FindGameObjectsWithTag("wall");
+            foreach (var wall2D in created2DWall)
+            {
+                var wall3DPos = wall2D.transform.position;
+                wall3DPos.y = -1;
+                Instantiate(NavWall, wall3DPos, wall2D.transform.rotation);
             }
         }
     }
