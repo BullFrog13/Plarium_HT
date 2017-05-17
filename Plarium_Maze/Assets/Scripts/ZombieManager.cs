@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using System.Linq;
+using UnityEngine;
 
 namespace Assets.Scripts
 {
@@ -9,24 +11,34 @@ namespace Assets.Scripts
         private bool _facingRight;
         private bool _followPlayer;
         private float _speedX;
-        private float _sppedY;
+        private float _speedY;
+        private Vector3 _cachedPosition;
+        private Transform _updatedPosition;
+        private Dictionary<int, bool> _possiblePathes;
         private Rigidbody2D _rb;
 
         private void Start()
         {
+            _cachedPosition = transform.position;
+            _possiblePathes = new Dictionary<int, bool>
+            {
+                { 1, true },
+                { 2, true },
+                { 3, true },
+                { 4, true }
+            };
             _rb = GetComponent<Rigidbody2D>();
             _facingRight = true;
         }
 
         private void Update()
         {
-            FlipZombie();
-            MoveZombie(_speedX, _sppedY);
-        }
+            if (CheckIfZombieIsInTheCellCenter())
+            {
 
-        private void ZombieRandomMove()
-        {
-            
+            }
+            FlipZombie();
+            MoveZombie(_speedX, _speedY);
         }
 
         private void ZombieFollowPlayerMove()
@@ -48,6 +60,11 @@ namespace Assets.Scripts
         private void MoveZombie(float horizontalSpeed, float verticalSpeed)
         {
             _rb.velocity = new Vector2(horizontalSpeed, verticalSpeed);
+        }
+
+        private bool CheckIfZombieIsInTheCellCenter()
+        {
+            return transform.position.x * 2 % 1 == 0 && transform.position.y * 2 % 1 == 0;
         }
     }
 }
