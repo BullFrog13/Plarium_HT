@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 namespace Assets.Scripts
 {
@@ -9,46 +9,134 @@ namespace Assets.Scripts
         public float Speed;
 
         private bool _facingRight;
-        private bool _followPlayer;
         private float _speedX;
         private float _speedY;
-        private Vector3 _cachedPosition;
-        private Transform _updatedPosition;
-        private Dictionary<int, bool> _possiblePathes;
         private Rigidbody2D _rb;
 
         private void Start()
         {
-            _cachedPosition = transform.position;
-            _possiblePathes = new Dictionary<int, bool>
-            {
-                { 1, true },
-                { 2, true },
-                { 3, true },
-                { 4, true }
-            };
             _rb = GetComponent<Rigidbody2D>();
             _facingRight = true;
+            _speedX = 1;
         }
 
-        private void Update()
+        private void FixedUpdate()
         {
-            if (CheckIfZombieIsInTheCellCenter())
+            if (_speedX == 1)
             {
-
+                var hit = Physics2D.Raycast(transform.position, Vector2.right, 0.5f);
+                if (hit.collider != null && hit.transform.tag == "wall")
+                {
+                    var choosenDirection = ChooseRandomDirection();
+                    switch (choosenDirection)
+                    {
+                        case 0:
+                            _speedX = 0;
+                            _speedY = 1;
+                            break;
+                        case 1:
+                            _speedX = -1;
+                            _speedY = 0;
+                            break;
+                        case 2:
+                            _speedX = 1;
+                            _speedY = 0;
+                            break;
+                        case 3:
+                            _speedX = 0;
+                            _speedY = -1;
+                            break;
+                    }
+                }
+            }
+            else if (_speedX == -1)
+            {
+                var hit = Physics2D.Raycast(transform.position, Vector2.left, 0.5f);
+                if (hit.collider != null && hit.transform.tag == "wall")
+                {
+                    var choosenDirection = ChooseRandomDirection();
+                    switch (choosenDirection)
+                    {
+                        case 0:
+                            _speedX = 0;
+                            _speedY = 1;
+                            break;
+                        case 1:
+                            _speedX = -1;
+                            _speedY = 0;
+                            break;
+                        case 2:
+                            _speedX = 1;
+                            _speedY = 0;
+                            break;
+                        case 3:
+                            _speedX = 0;
+                            _speedY = -1;
+                            break;
+                    }
+                }
+            }
+            else if (_speedY == 1)
+            {
+                var hit = Physics2D.Raycast(transform.position, Vector2.up, 0.5f);
+                if (hit.collider != null && hit.transform.tag == "wall")
+                {
+                    var choosenDirection = ChooseRandomDirection();
+                    switch (choosenDirection)
+                    {
+                        case 0:
+                            _speedX = 0;
+                            _speedY = 1;
+                            break;
+                        case 1:
+                            _speedX = -1;
+                            _speedY = 0;
+                            break;
+                        case 2:
+                            _speedX = 1;
+                            _speedY = 0;
+                            break;
+                        case 3:
+                            _speedX = 0;
+                            _speedY = -1;
+                            break;
+                    }
+                }
+            }
+            else if (_speedY == -1)
+            {
+                var hit = Physics2D.Raycast(transform.position, Vector2.down, 0.5f);
+                if (hit.collider != null && hit.transform.tag == "wall")
+                {
+                    var choosenDirection = ChooseRandomDirection();
+                    switch (choosenDirection)
+                    {
+                        case 0:
+                            _speedX = 0;
+                            _speedY = 1;
+                            break;
+                        case 1:
+                            _speedX = -1;
+                            _speedY = 0;
+                            break;
+                        case 2:
+                            _speedX = 1;
+                            _speedY = 0;
+                            break;
+                        case 3:
+                            _speedX = 0;
+                            _speedY = -1;
+                            break;
+                    }
+                }
             }
             FlipZombie();
             MoveZombie(_speedX, _speedY);
         }
 
-        private void ZombieFollowPlayerMove()
-        {
-            
-        }
-
         private void FlipZombie()
         {
-            if (_speedX > 0 && !_facingRight || _speedX < 0 && _facingRight)
+            if (_speedX < 0 && !_facingRight || _speedX > 0 && _facingRight)
             {
                 _facingRight = !_facingRight;
                 Vector2 temp = transform.localScale;
@@ -62,9 +150,38 @@ namespace Assets.Scripts
             _rb.velocity = new Vector2(horizontalSpeed, verticalSpeed);
         }
 
-        private bool CheckIfZombieIsInTheCellCenter()
+        private List<int> ChooseAvailableDirections()
         {
-            return transform.position.x * 2 % 1 == 0 && transform.position.y * 2 % 1 == 0;
+            var result = new List<int>();
+            var hit2 = Physics2D.Raycast(transform.position, Vector2.up, 0.5f);
+            if (hit2.collider == null)
+            {
+                result.Add(0);
+            }
+            var hit1 = Physics2D.Raycast(transform.position, Vector2.right, 0.5f);
+            if (hit1.collider == null)
+            {
+                result.Add(2);
+            }
+            var hit3 = Physics2D.Raycast(transform.position, Vector2.left, 0.5f);
+            if (hit3.collider == null)
+            {
+                result.Add(1);
+            }
+            var hit4 = Physics2D.Raycast(transform.position, Vector2.down, 0.5f);
+            if (hit4.collider == null)
+            {
+                result.Add(3);
+            }
+
+            return result;
+        }
+
+        private int ChooseRandomDirection()
+        {
+            var ava = ChooseAvailableDirections();
+            var randomIndex = Random.Range(0, ava.Count);
+            return ava[randomIndex];
         }
     }
 }

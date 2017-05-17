@@ -56,6 +56,7 @@ namespace Assets.Scripts
 
         public Maze maze;
         public GameObject wall;
+        public GameObject Floor;
         public int xSize = 5;
         public int ySize = 5;
 
@@ -78,6 +79,7 @@ namespace Assets.Scripts
             maze = new Maze(xSize, ySize);
             _remainingCells = new List<int>();
             CreateWalls();
+            CreateFloor();
         }
 
         private void CreateWalls()
@@ -268,6 +270,19 @@ namespace Assets.Scripts
                 {
                     _currentCell = _remainingCells[_backingupCell];
                     _backingupCell--;
+                }
+            }
+        }
+
+        private void CreateFloor()
+        {
+            for (int i = 0; i < xSize; i++)
+            {
+                for (int j = 0; j < ySize; j++)
+                {
+                    var floorCreatePosition = new Vector3(maze.InitialPos.x + j * WallLength + WallLength / 2, maze.InitialPos.y + i * WallLength + WallLength / 2, 0);
+                    var tempFloor = Instantiate(Floor, floorCreatePosition, Quaternion.identity);
+                    tempFloor.transform.parent = _wallHolder.transform;
                 }
             }
         }
