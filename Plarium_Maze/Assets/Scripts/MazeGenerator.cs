@@ -23,7 +23,7 @@ namespace Assets.Scripts
                 YSize = ysize;
                 CellsCount = XSize*YSize;
                 MazeWallLength = WallLength;
-                InitialPos = new Vector2(-(XSize * MazeWallLength / 2), -(YSize * MazeWallLength / 2));
+                InitialPos = new Vector3(-(XSize * MazeWallLength / 2), 0, -(YSize * MazeWallLength / 2));
             }
         }
 
@@ -50,8 +50,8 @@ namespace Assets.Scripts
             public GameObject CreateWall(Vector3 pos, bool isHorizontal = true)
             {
                 return Instantiate(_wallGameObject, pos, isHorizontal
-                    ? Quaternion.identity
-                    : Quaternion.Euler(0, 0, 90));
+                    ? Quaternion.AngleAxis(90, Vector3.right)
+                    : Quaternion.Euler(90, 0, 90));
             }
         }
 
@@ -99,7 +99,7 @@ namespace Assets.Scripts
             {
                 name = "Maze Structure",
             };
-            _wallHolder.transform.Rotate(Vector3.up);
+            //_wallHolder.transform.Rotate(Vector3.up);
 
             Vector3 wallCreatePosition;
             GameObject tempWall;
@@ -109,7 +109,7 @@ namespace Assets.Scripts
             {
                 for (var j = 0; j <= xSize; j++)
                 {
-                    wallCreatePosition = new Vector3(maze.InitialPos.x + j * WallLength, maze.InitialPos.y + i * WallLength + WallLength / 2);
+                    wallCreatePosition = new Vector3(maze.InitialPos.x + j * WallLength, 0, maze.InitialPos.y + i * WallLength + WallLength / 2);
                     var wallObject = new Wall(wall);
                     tempWall = wallObject.CreateWall(wallCreatePosition);
                     tempWall.transform.parent = _wallHolder.transform;
@@ -121,7 +121,7 @@ namespace Assets.Scripts
             {
                 for (var j = 0; j < xSize; j++)
                 {
-                    wallCreatePosition = new Vector3(maze.InitialPos.x + j * WallLength + WallLength / 2, maze.InitialPos.y + i * WallLength);
+                    wallCreatePosition = new Vector3(maze.InitialPos.x + j * WallLength + WallLength / 2, 0, maze.InitialPos.y + i * WallLength);
                     var wallObject = new Wall(wall);
                     tempWall = wallObject.CreateWall(wallCreatePosition, false);
                     tempWall.transform.parent = _wallHolder.transform;
@@ -291,8 +291,8 @@ namespace Assets.Scripts
             {
                 for (int j = 0; j < ySize; j++)
                 {
-                    var floorCreatePosition = new Vector3(maze.InitialPos.x + j * WallLength + WallLength / 2, maze.InitialPos.y + i * WallLength + WallLength / 2, 0);
-                    var tempFloor = Instantiate(Floor, floorCreatePosition, Quaternion.identity);
+                    var floorCreatePosition = new Vector3(maze.InitialPos.x + j * WallLength + WallLength / 2, 0, maze.InitialPos.y + i * WallLength + WallLength / 2);
+                    var tempFloor = Instantiate(Floor, floorCreatePosition, Quaternion.AngleAxis(90, Vector3.right));
                     tempFloor.transform.parent = _wallHolder.transform;
                 }
             }

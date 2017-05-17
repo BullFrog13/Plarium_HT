@@ -1,15 +1,14 @@
 ﻿using UnityEngine;
 
-public class Test : MonoBehaviour
+namespace Assets.Scripts
 {
-    public GameObject Follow;
-
-    private void Start()
+    public class Test : MonoBehaviour
     {
-    }
+        public GameObject Follow;
 
-    private void LateUpdate()
-    {
-        transform.position = Follow.transform.position;
+        private void LateUpdate()
+        {
+            transform.position = Follow.transform.position;
+        }
     }
 }

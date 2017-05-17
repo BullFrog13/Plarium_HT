@@ -9,13 +9,13 @@ namespace Assets.Scripts
         private bool _facingRight;
         private float _speedX;
         private float _speedY;
-        private Rigidbody2D _rb;
+        private Rigidbody _rb;
         private GameManager _gameManager;
 
         private void Start()
         {
             _gameManager = GameObject.Find("Game Manager").GetComponent<GameManager>();
-            _rb = GetComponent<Rigidbody2D>();
+            _rb = GetComponent<Rigidbody>();
             _facingRight = true;
         }
 
@@ -66,7 +66,7 @@ namespace Assets.Scripts
             if (_speedX > 0 && !_facingRight || _speedX < 0 && _facingRight)
             {
                 _facingRight = !_facingRight;
-                Vector2 temp = transform.localScale;
+                Vector3 temp = transform.localScale;
                 temp.x *= -1;
                 transform.localScale = temp;
             }
@@ -74,10 +74,10 @@ namespace Assets.Scripts
 
         private void MovePlayer(float horizontalSpeed, float verticalSpeed)
         {
-            _rb.velocity = new Vector2(horizontalSpeed, verticalSpeed);
+            _rb.velocity = new Vector3(horizontalSpeed, 0, verticalSpeed);
         }
 
-        private void OnTriggerEnter2D(Collider2D other)
+        private void OnTriggerEnter(Collider other)
         {
             if (other.gameObject.tag.Equals("coin"))
             {
