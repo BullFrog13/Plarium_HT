@@ -60,27 +60,25 @@ namespace Assets.Scripts
 
         private void AddCoin()
         {
-            var randomCoinPos = new Vector3(_maze.InitialPos.x + _maze.MazeWallLength/2 + Random.Range(0, _maze.XSize), 0,
+            var randomCoinPos = new Vector2(_maze.InitialPos.x + _maze.MazeWallLength/2 + Random.Range(0, _maze.XSize),
                 _maze.InitialPos.y + _maze.MazeWallLength/2 + Random.Range(0, _maze.YSize));
-            Instantiate(Coin, randomCoinPos, Quaternion.AngleAxis(90, Vector3.right));
+            Instantiate(Coin, randomCoinPos, Quaternion.identity);
         }
 
         private void CreatePlayer()
         {
-            var randomPlayerPos = new Vector3(
+            var randomPlayerPos = new Vector2(
                 _maze.InitialPos.x + _maze.MazeWallLength/2 + Random.Range(0, _maze.XSize),
-                0,
                 _maze.InitialPos.y + _maze.MazeWallLength/2 + Random.Range(0, _maze.YSize));
-            Instantiate(Player, randomPlayerPos, Quaternion.AngleAxis(90, Vector3.right));
+            Instantiate(Player, randomPlayerPos, Quaternion.identity);
         }
 
         private void CreateZombie()
         {
-            var randomZombiePos = new Vector3(
+            var randomZombiePos = new Vector2(
                 _maze.InitialPos.x + _maze.MazeWallLength / 2 + Random.Range(0, _maze.XSize),
-                0,
                 _maze.InitialPos.y + _maze.MazeWallLength / 2 + Random.Range(0, _maze.YSize));
-            Instantiate(Zombie, randomZombiePos, Quaternion.AngleAxis(90, Vector3.right));
+            Instantiate(Zombie, randomZombiePos, Quaternion.identity);
         }
 
         private void CreateMummy()

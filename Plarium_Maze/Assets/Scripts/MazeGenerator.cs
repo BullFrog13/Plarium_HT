@@ -13,7 +13,7 @@ namespace Assets.Scripts
             public int XSize;
             public int YSize;
             public int CellsCount;
-            public Vector3 InitialPos;
+            public Vector2 InitialPos;
             public float MazeWallLength;
 
             public Maze(int xsize, int ysize)
@@ -22,11 +22,12 @@ namespace Assets.Scripts
                 YSize = ysize;
                 CellsCount = XSize*YSize;
                 MazeWallLength = WallLength;
-                InitialPos = new Vector3(-(XSize * MazeWallLength / 2), 0, -(YSize * MazeWallLength / 2));
+                InitialPos = new Vector2(-(XSize * MazeWallLength / 2), -(YSize * MazeWallLength / 2));
             }
         }
 
-        private class Cell
+        [Serializable]
+        public class Cell
         {
             public bool Visited;
 
@@ -45,19 +46,17 @@ namespace Assets.Scripts
                 _wallGameObject = wall;
             }
 
-            public GameObject CreateWall(Vector3 pos, bool isHorizontal = true)
+            public GameObject CreateWall(Vector2 pos, bool isHorizontal = true)
             {
                 return Instantiate(_wallGameObject, pos, isHorizontal
-                    ? Quaternion.AngleAxis(90, Vector3.right)
-                    : Quaternion.Euler(90, 0, 90));
+                    ? Quaternion.identity
+                    : Quaternion.Euler(0, 0, 90));
             }
         }
 
         public Maze maze;
         public GameObject wall;
         public GameObject Floor;
-        public GameObject NavFloor;
-        public GameObject NavWall;
         public int xSize = 5;
         public int ySize = 5;
 
@@ -74,35 +73,13 @@ namespace Assets.Scripts
         private int _backingupCell;
         private int _wallToBreak;
         private const int WallCountInCell = 4;
-        private bool _updateWasCalled;
 
         private void Start()
         {
-            /*int layer = GameObjectUtility.GetNavMeshAreaFromName("Not Walkable");
-            GameObject g = Selection.activeGameObject;
-            StaticEditorFlags staticFlags = GameObjectUtility.GetStaticEditorFlags(g);
-            if (staticFlags  != StaticEditorFlags.NavigationStatic)
-            {
-                staticFlags = StaticEditorFlags.NavigationStatic;
-                GameObjectUtility.SetStaticEditorFlags(g, staticFlags);
-            }
-            GameObjectUtility.SetNavMeshArea(g, layer);*/
-
             maze = new Maze(xSize, ySize);
             _remainingCells = new List<int>();
             CreateWalls();
             CreateFloor();
-            Create3DNavPlane();
-        }
-
-        private void Update()
-        {
-            if (!_updateWasCalled)
-            {
-                Create3DNavWalls();
-            }
-            _updateWasCalled = true;
-
         }
 
         private void CreateWalls()
@@ -120,7 +97,7 @@ namespace Assets.Scripts
             {
                 for (var j = 0; j <= xSize; j++)
                 {
-                    wallCreatePosition = new Vector3(maze.InitialPos.x + j * WallLength, 0, maze.InitialPos.y + i * WallLength + WallLength / 2);
+                    wallCreatePosition = new Vector2(maze.InitialPos.x + j * WallLength, maze.InitialPos.y + i * WallLength + WallLength / 2);
                     var wallObject = new Wall(wall);
                     tempWall = wallObject.CreateWall(wallCreatePosition);
                     tempWall.transform.parent = _wallHolder.transform;
@@ -132,7 +109,7 @@ namespace Assets.Scripts
             {
                 for (var j = 0; j < xSize; j++)
                 {
-                    wallCreatePosition = new Vector3(maze.InitialPos.x + j * WallLength + WallLength / 2, 0, maze.InitialPos.y + i * WallLength);
+                    wallCreatePosition = new Vector2(maze.InitialPos.x + j * WallLength + WallLength / 2, maze.InitialPos.y + i * WallLength);
                     var wallObject = new Wall(wall);
                     tempWall = wallObject.CreateWall(wallCreatePosition, false);
                     tempWall.transform.parent = _wallHolder.transform;
@@ -298,31 +275,14 @@ namespace Assets.Scripts
 
         private void CreateFloor()
         {
-            for (var i = 0; i < xSize; i++)
+            for (int i = 0; i < xSize; i++)
             {
-                for (var j = 0; j < ySize; j++)
+                for (int j = 0; j < ySize; j++)
                 {
-                    var floorCreatePosition = new Vector3(maze.InitialPos.x + j * WallLength + WallLength / 2, 0, maze.InitialPos.y + i * WallLength + WallLength / 2);
-                    var tempFloor = Instantiate(Floor, floorCreatePosition, Quaternion.AngleAxis(90, Vector3.right));
+                    var floorCreatePosition = new Vector2(maze.InitialPos.x + j * WallLength + WallLength / 2, maze.InitialPos.y + i * WallLength + WallLength / 2);
+                    var tempFloor = Instantiate(Floor, floorCreatePosition, Quaternion.identity);
                     tempFloor.transform.parent = _wallHolder.transform;
                 }
-            }
-        }
-
-        private void Create3DNavPlane()
-        {
-            var navFloorPosition = new Vector3(maze.InitialPos.x + maze.XSize / 2, -1, maze.InitialPos.y + maze.YSize / 2);
-            Instantiate(NavFloor, navFloorPosition, Quaternion.identity);
-        }
-
-        private void Create3DNavWalls()
-        {
-            var created2DWall = GameObject.FindGameObjectsWithTag("wall");
-            foreach (var wall2D in created2DWall)
-            {
-                var wall3DPos = wall2D.transform.position;
-                wall3DPos.y = -1;
-                Instantiate(NavWall, wall3DPos, wall2D.transform.rotation);
             }
         }
     }
