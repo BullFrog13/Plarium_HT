@@ -52,29 +52,24 @@ namespace Assets.Scripts
         private GameObject _staticWallHolder;
         private GameObject _cellsHoder;
         private GameObject _breakableWallsHolder;
-        public Cell[] Cells;
-
-        private List<int> _remainingCells;
+        private Cell[] _cells;
         private GameObject[] _setOfBreakableWalls;
-        private int _backingupCell;
-        private int _wallToBreak;
+
+        private enum Directions
+        {
+            North = 1,
+            West = 2,
+            East = 3,
+            South = 4
+        }
 
         private void Start()
         {
-            _staticWallHolder = new GameObject
-            {
-                name = "Static Wall Holder"
-            };
-            _cellsHoder = new GameObject
-            {
-                name = "Cells Holder"
-            };
-            _breakableWallsHolder =  new GameObject
-            {
-                name = "Breakable walls Holder"
-            };
+            _staticWallHolder = new GameObject { name = "Static wall holder" };
+            _cellsHoder = new GameObject { name = "Cells holder" };
+            _breakableWallsHolder =  new GameObject { name = "Breakable walls holder" };
             maze = new Maze(xSize, ySize);
-            _remainingCells = new List<int>();
+
             CreateNotBreakableWalls();
             CreateStaticFloor();
             CreateBreakableWalls();
@@ -84,16 +79,20 @@ namespace Assets.Scripts
 
         private void CreateNotBreakableWalls()
         {
+            // iteration for Y
             for (var i = 0; i <= maze.YSize * 2; i++)
             {
+                // iteration for X.
                 for (var j = 0; j <= maze.XSize * 2; j++)
                 {
+                    // check for outside walls
                     if (j == 0 || i == 0 || j == maze.XSize * 2 || i == maze.YSize * 2)
                     {
                         var outsideWallCreatePos = new Vector2(j, i);
                         var tempOutsideWall = Instantiate(Wall, outsideWallCreatePos, Quaternion.identity);
                         tempOutsideWall.transform.parent = _staticWallHolder.transform;
                     }
+                    // concerning that walls are squares there are some walls inside that cannot be broken
                     if (j != 0 && i != 0 && j % 2 == 0 && i % 2 == 0)
                     {
                         var outsideWallCreatePos = new Vector2(j, i);
@@ -106,7 +105,8 @@ namespace Assets.Scripts
 
         private void CreateStaticFloor()
         {
-            Cells = new Cell[maze.CellsCount];
+            // instantiating cells
+            _cells = new Cell[maze.CellsCount];
             var cellsCounter = 0;
             for (var i = 0; i < maze.YSize * 2; i++)
             {
@@ -114,7 +114,7 @@ namespace Assets.Scripts
                 {
                     if (i != 0 && j != 0 && i % 2 != 0 && j % 2 != 0)
                     {
-                        Cells[cellsCounter] = new Cell();
+                        _cells[cellsCounter] = new Cell();
                         var cellCreatePos = new Vector2(j, i);
                         var tempOutsideWall = Instantiate(Floor, cellCreatePos, Quaternion.identity);
                         tempOutsideWall.transform.parent = _cellsHoder.transform;
@@ -126,6 +126,7 @@ namespace Assets.Scripts
 
         private void CreateBreakableWalls()
         {
+            // basically creating breakable walls inside of our maze
             for (var i = 0; i < maze.YSize * 2; i++)
             {
                 for (var j = 0; j < maze.XSize * 2; j++)
@@ -145,6 +146,8 @@ namespace Assets.Scripts
 
         private void CreateCells()
         {
+            // this method is just for assigning right walls for right cells for A* Depth algorithm needs
+
             var processingRow = 0;
             var rowCounterCheck = 1;
 
@@ -160,31 +163,34 @@ namespace Assets.Scripts
                 // for east wall
                 if (rowCounterCheck != maze.XSize)
                 {
-                    Cells[i].East = _setOfBreakableWalls[i + processingRow * (maze.XSize - 1)];
-                    Cells[i].EastWallIndex = i + processingRow * (maze.XSize - 1);
+                    _cells[i].East = _setOfBreakableWalls[i + processingRow * (maze.XSize - 1)];
+
+                    // need all those indexes later to understand where to brake wall and build floor
+                    _cells[i].EastWallIndex = i + processingRow * (maze.XSize - 1);
                 }
 
                 // for north wall
                 if (processingRow != maze.YSize - 1)
                 {
-                    Cells[i].North = _setOfBreakableWalls[i + (maze.XSize - 1) * (processingRow + 1)];
-                    Cells[i].NorthWallIndex = i + (maze.XSize - 1)*(processingRow + 1);
+                    _cells[i].North = _setOfBreakableWalls[i + (maze.XSize - 1) * (processingRow + 1)];
+                    _cells[i].NorthWallIndex = i + (maze.XSize - 1)*(processingRow + 1);
                 }
 
                 // for west wall
                 if (rowCounterCheck != 1)
                 {
-                    Cells[i].West = _setOfBreakableWalls[i + processingRow * (maze.XSize - 1) - 1];
-                    Cells[i].WestWallIndex = i + processingRow*(maze.XSize - 1) - 1;
+                    _cells[i].West = _setOfBreakableWalls[i + processingRow * (maze.XSize - 1) - 1];
+                    _cells[i].WestWallIndex = i + processingRow*(maze.XSize - 1) - 1;
                 }
 
                 // for south wall
                 if (processingRow != 0)
                 {
-                    Cells[i].South = _setOfBreakableWalls[i + (maze.XSize - 1) * (processingRow - 1) - 1];
-                    Cells[i].SouthWallIndex = i + (maze.XSize - 1)*(processingRow - 1) - 1;
+                    _cells[i].South = _setOfBreakableWalls[i + (maze.XSize - 1) * (processingRow - 1) - 1];
+                    _cells[i].SouthWallIndex = i + (maze.XSize - 1)*(processingRow - 1) - 1;
                 }
 
+                // increase row counter
                 if (rowCounterCheck == maze.XSize)
                 {
                     processingRow++;
@@ -197,6 +203,8 @@ namespace Assets.Scripts
 
         private void CreateLabyrinth()
         {
+            // implementation of an A* Depth algorithm is beneath
+
             var currentCell = PickRandomIntialCell();
             var stack = new Stack<int>();
             stack.Push(currentCell);
@@ -207,7 +215,7 @@ namespace Assets.Scripts
                 var randomChosenNeighbour = PickRandomNotVisitedCell(stack.Peek());
                 if (randomChosenNeighbour != -1)
                 {
-                    Cells[randomChosenNeighbour].Visited = true;
+                    _cells[randomChosenNeighbour].Visited = true;
                     stack.Push(randomChosenNeighbour);
                     countOfVisitedCells++;
                 }
@@ -218,35 +226,27 @@ namespace Assets.Scripts
             }
         }
 
-        private enum Directions
-        {
-            North = 1,
-            West = 2,
-            East = 3,
-            South = 4
-        }
-
         private int PickRandomNotVisitedCell(int currentCellIndex)
         {
-            var cell = Cells[currentCellIndex];
+            var cell = _cells[currentCellIndex];
             var possibleDirections = new List<Directions>();
 
-            if (cell.North != null && !Cells[currentCellIndex + maze.XSize].Visited)
+            if (cell.North != null && !_cells[currentCellIndex + maze.XSize].Visited)
             {
                 possibleDirections.Add(Directions.North);
             }
 
-            if (cell.West != null && !Cells[currentCellIndex - 1].Visited)
+            if (cell.West != null && !_cells[currentCellIndex - 1].Visited)
             {
                 possibleDirections.Add(Directions.West);
             }
 
-            if (cell.East != null && !Cells[currentCellIndex + 1].Visited)
+            if (cell.East != null && !_cells[currentCellIndex + 1].Visited)
             {
                 possibleDirections.Add(Directions.East);
             }
 
-            if (cell.South != null && !Cells[currentCellIndex - maze.XSize].Visited)
+            if (cell.South != null && !_cells[currentCellIndex - maze.XSize].Visited)
             {
                 possibleDirections.Add(Directions.South);
             }
