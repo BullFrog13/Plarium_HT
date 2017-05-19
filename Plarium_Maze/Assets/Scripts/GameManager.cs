@@ -4,7 +4,7 @@ namespace Assets.Scripts
 {
     public class GameManager : MonoBehaviour
     {
-        public GameObject Coin;
+        /*public GameObject Coin;
         public GameObject Player;
         public GameObject Zombie;
         public GameObject Mummy;
@@ -87,6 +87,6 @@ namespace Assets.Scripts
                 _maze.InitialPos.x + _maze.MazeWallLength / 2 + Random.Range(0, _maze.XSize),
                 _maze.InitialPos.y + _maze.MazeWallLength / 2 + Random.Range(0, _maze.YSize));
             Instantiate(Mummy, randomMummyPos, Quaternion.identity);
-        }
+        }*/
     }
 }

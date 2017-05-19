@@ -4,7 +4,7 @@ namespace Assets.Scripts
 {
     public class PlayerManager : MonoBehaviour
     {
-        public float Speed;
+        /*public float Speed;
 
         private bool _facingRight;
         private float _speedX;
@@ -85,6 +85,6 @@ namespace Assets.Scripts
                 _gameManager.CollectedCoins++;
                 Destroy(other.gameObject);
             }
-        }
+        }*/
     }
 }
