@@ -17,13 +17,14 @@ namespace Assets.Scripts
         private bool _secondZombieIsEnabled;
         private float _coinTimer;
 
-        private void Start()
+        private void Awake()
         {
-            AddItemIntoMaze(Player);
-            AddItemIntoMaze(Zombie);
             _secondZombieIsEnabled = false;
             _mummyIsEnabled = false;
             _coinTimer = CoinAddingRangeTime;
+
+            AddItemIntoMaze(Player);
+            AddItemIntoMaze(Zombie);
         }
 
         private void Update()
@@ -42,7 +43,7 @@ namespace Assets.Scripts
 
             if (MazeData.CollectedCoins == CoinsNeededForSecondZombieSpawn && !_secondZombieIsEnabled)
             {
-                AddItemIntoMaze(Mummy);
+                AddItemIntoMaze(Zombie);
                 _secondZombieIsEnabled = true;
             }
 

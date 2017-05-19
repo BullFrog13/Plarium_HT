@@ -60,7 +60,7 @@ namespace Assets.Scripts
             South = 4
         }
 
-        private void Start()
+        private void Awake()
         {
             MazeData.XSize = XSize;
             MazeData.YSize = YSize;

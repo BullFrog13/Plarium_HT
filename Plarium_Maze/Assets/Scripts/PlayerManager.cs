@@ -10,10 +10,12 @@ namespace Assets.Scripts
         private float _speedX;
         private float _speedY;
         private Rigidbody2D _rb;
+        private Animator _animator;
 
         private void Start()
         {
             _rb = GetComponent<Rigidbody2D>();
+            _animator = GetComponent<Animator>();
             _facingRight = true;
         }
 
