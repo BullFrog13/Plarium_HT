@@ -4,17 +4,15 @@ namespace Assets.Scripts
 {
     public class PlayerManager : MonoBehaviour
     {
-        /*public float Speed;
+        public float Speed;
 
         private bool _facingRight;
         private float _speedX;
         private float _speedY;
         private Rigidbody2D _rb;
-        private GameManager _gameManager;
 
         private void Start()
         {
-            _gameManager = GameObject.Find("Game Manager").GetComponent<GameManager>();
             _rb = GetComponent<Rigidbody2D>();
             _facingRight = true;
         }
@@ -81,10 +79,10 @@ namespace Assets.Scripts
         {
             if (other.gameObject.tag.Equals("coin"))
             {
-                _gameManager.CurrentCointCount--;
-                _gameManager.CollectedCoins++;
+                MazeData.CurrentCointCount--;
+                MazeData.CollectedCoins++;
                 Destroy(other.gameObject);
             }
-        }*/
+        }
     }
 }

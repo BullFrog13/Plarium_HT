@@ -4,12 +4,10 @@ namespace Assets.Scripts
 {
     public class GameManager : MonoBehaviour
     {
-        /*public GameObject Coin;
+        public GameObject Coin;
         public GameObject Player;
         public GameObject Zombie;
         public GameObject Mummy;
-        public int CurrentCointCount;
-        public int CollectedCoins;
 
         private const int MaxCoinCount = 10;
         private const float CoinAddingRangeTime = 5f;
@@ -18,75 +16,54 @@ namespace Assets.Scripts
         private bool _mummyIsEnabled;
         private bool _secondZombieIsEnabled;
         private float _coinTimer;
-        private MazeGenerator.Maze _maze;
 
         private void Start()
         {
-            _maze = GameObject.Find("MazeGenerator").GetComponent<MazeGenerator>().maze;
-            CreatePlayer();
-            CreateZombie();
+            AddItemIntoMaze(Player);
+            AddItemIntoMaze(Zombie);
             _secondZombieIsEnabled = false;
             _mummyIsEnabled = false;
             _coinTimer = CoinAddingRangeTime;
-            CollectedCoins = 0;
         }
 
         private void Update()
         {
-            if (CurrentCointCount < MaxCoinCount)
+            if (MazeData.CurrentCointCount < MaxCoinCount)
             {
                 _coinTimer -= Time.deltaTime;
 
                 if (_coinTimer <= 0)
                 {
-                    AddCoin();
+                    AddItemIntoMaze(Coin);
                     _coinTimer = CoinAddingRangeTime;
-                    CurrentCointCount++;
+                    MazeData.CurrentCointCount++;
                 }
             }
 
-            if (CollectedCoins == CoinsNeededForSecondZombieSpawn && !_secondZombieIsEnabled)
+            if (MazeData.CollectedCoins == CoinsNeededForSecondZombieSpawn && !_secondZombieIsEnabled)
             {
-                CreateZombie();
+                AddItemIntoMaze(Mummy);
                 _secondZombieIsEnabled = true;
             }
 
-            if (CollectedCoins == CoinsNeededForMummySpawn && !_mummyIsEnabled)
+            if (MazeData.CollectedCoins == CoinsNeededForMummySpawn && !_mummyIsEnabled)
             {
-                CreateMummy();
+                AddItemIntoMaze(Mummy);
                 _mummyIsEnabled = true;
             }
         }
 
-        private void AddCoin()
+        private void AddItemIntoMaze(GameObject objectToAdd)
         {
-            var randomCoinPos = new Vector2(_maze.InitialPos.x + _maze.MazeWallLength/2 + Random.Range(0, _maze.XSize),
-                _maze.InitialPos.y + _maze.MazeWallLength/2 + Random.Range(0, _maze.YSize));
-            Instantiate(Coin, randomCoinPos, Quaternion.identity);
+            var chosenTile = GetRandomTileForMazeItems();
+            Instantiate(objectToAdd, chosenTile.transform.position, Quaternion.identity);
         }
 
-        private void CreatePlayer()
+        private GameObject GetRandomTileForMazeItems()
         {
-            var randomPlayerPos = new Vector2(
-                _maze.InitialPos.x + _maze.MazeWallLength/2 + Random.Range(0, _maze.XSize),
-                _maze.InitialPos.y + _maze.MazeWallLength/2 + Random.Range(0, _maze.YSize));
-            Instantiate(Player, randomPlayerPos, Quaternion.identity);
+            var availableTiles = GameObject.FindGameObjectsWithTag("ground");
+            var randomTileIndex = Random.Range(0, availableTiles.Length);
+            return availableTiles[randomTileIndex];
         }
-
-        private void CreateZombie()
-        {
-            var randomZombiePos = new Vector2(
-                _maze.InitialPos.x + _maze.MazeWallLength / 2 + Random.Range(0, _maze.XSize),
-                _maze.InitialPos.y + _maze.MazeWallLength / 2 + Random.Range(0, _maze.YSize));
-            Instantiate(Zombie, randomZombiePos, Quaternion.identity);
-        }
-
-        private void CreateMummy()
-        {
-            var randomMummyPos = new Vector2(
-                _maze.InitialPos.x + _maze.MazeWallLength / 2 + Random.Range(0, _maze.XSize),
-                _maze.InitialPos.y + _maze.MazeWallLength / 2 + Random.Range(0, _maze.YSize));
-            Instantiate(Mummy, randomMummyPos, Quaternion.identity);
-        }*/
     }
 }

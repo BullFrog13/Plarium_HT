@@ -11,16 +11,12 @@ namespace Assets.Scripts
         [Serializable]
         public class Maze
         {
-            public int XSize;
-            public int YSize;
             public int CellsCount;
             public Cell[] Cells;
 
             public Maze(int xsize, int ysize)
             {
-                XSize = xsize;
-                YSize = ysize;
-                CellsCount = XSize * YSize;
+                CellsCount = xsize * ysize;
                 Cells = new Cell[CellsCount];
             }
         }
@@ -43,11 +39,11 @@ namespace Assets.Scripts
             public int SouthWallIndex;
         }
 
-        public Maze maze;
+        private Maze _maze;
         public GameObject Wall;
         public GameObject Floor;
-        public int xSize;
-        public int ySize;
+        public int XSize;
+        public int YSize;
 
         private GameObject _staticWallHolder;
         private GameObject _cellsHolder;
@@ -66,11 +62,14 @@ namespace Assets.Scripts
 
         private void Start()
         {
+            MazeData.XSize = XSize;
+            MazeData.YSize = YSize;
+
             _staticWallHolder = new GameObject { name = "Static wall" };
             _cellsHolder = new GameObject { name = "Cells" };
             _breakableWallsHolder =  new GameObject { name = "Breakable walls" };
             _pathesHolder = new GameObject { name = "Created pathes" };
-            maze = new Maze(xSize, ySize);
+            _maze = new Maze(XSize, YSize);
 
             CreateNotBreakableWalls();
             CreateStaticFloor();
@@ -82,13 +81,13 @@ namespace Assets.Scripts
         private void CreateNotBreakableWalls()
         {
             // iteration for Y
-            for (var i = 0; i <= maze.YSize * 2; i++)
+            for (var i = 0; i <= MazeData.YSize * 2; i++)
             {
                 // iteration for X.
-                for (var j = 0; j <= maze.XSize * 2; j++)
+                for (var j = 0; j <= MazeData.XSize * 2; j++)
                 {
                     // check for outside walls
-                    if (j == 0 || i == 0 || j == maze.XSize * 2 || i == maze.YSize * 2)
+                    if (j == 0 || i == 0 || j == MazeData.XSize * 2 || i == MazeData.YSize * 2)
                     {
                         var outsideWallCreatePos = new Vector2(j, i);
                         var tempOutsideWall = Instantiate(Wall, outsideWallCreatePos, Quaternion.identity);
@@ -108,11 +107,11 @@ namespace Assets.Scripts
         private void CreateStaticFloor()
         {
             // instantiating cells
-            _cells = new Cell[maze.CellsCount];
+            _cells = new Cell[_maze.CellsCount];
             var cellsCounter = 0;
-            for (var i = 0; i < maze.YSize * 2; i++)
+            for (var i = 0; i < MazeData.YSize * 2; i++)
             {
-                for (var j = 0; j < maze.XSize * 2; j++)
+                for (var j = 0; j < MazeData.XSize * 2; j++)
                 {
                     if (i != 0 && j != 0 && i % 2 != 0 && j % 2 != 0)
                     {
@@ -129,9 +128,9 @@ namespace Assets.Scripts
         private void CreateBreakableWalls()
         {
             // basically creating breakable walls inside of our maze
-            for (var i = 0; i < maze.YSize * 2; i++)
+            for (var i = 0; i < MazeData.YSize * 2; i++)
             {
-                for (var j = 0; j < maze.XSize * 2; j++)
+                for (var j = 0; j < MazeData.XSize * 2; j++)
                 {
                     if (i != 0 && j != 0)
                     {
@@ -160,39 +159,39 @@ namespace Assets.Scripts
                 _setOfBreakableWalls[i] = _breakableWallsHolder.transform.GetChild(i).gameObject;
             }
 
-            for (var i = 0; i < maze.CellsCount; i++)
+            for (var i = 0; i < _maze.CellsCount; i++)
             {
                 // for east wall
-                if (rowCounterCheck != maze.XSize)
+                if (rowCounterCheck != MazeData.XSize)
                 {
                     // need all those indexes later to understand where to brake wall and build floor
-                    _cells[i].EastWallIndex = i + processingRow * (maze.XSize - 1);
+                    _cells[i].EastWallIndex = i + processingRow * (MazeData.XSize - 1);
                     _cells[i].East = _setOfBreakableWalls[_cells[i].EastWallIndex];
                 }
 
                 // for north wall
-                if (processingRow != maze.YSize - 1)
+                if (processingRow != MazeData.YSize - 1)
                 {
-                    _cells[i].NorthWallIndex = i + (maze.XSize - 1)*(processingRow + 1);
+                    _cells[i].NorthWallIndex = i + (MazeData.XSize - 1)*(processingRow + 1);
                     _cells[i].North = _setOfBreakableWalls[_cells[i].NorthWallIndex];
                 }
 
                 // for west wall
                 if (rowCounterCheck != 1)
                 {
-                    _cells[i].WestWallIndex = i + processingRow*(maze.XSize - 1) - 1;
+                    _cells[i].WestWallIndex = i + processingRow*(MazeData.XSize - 1) - 1;
                     _cells[i].West = _setOfBreakableWalls[_cells[i].WestWallIndex];
                 }
 
                 // for south wall
                 if (processingRow != 0)
                 {
-                    _cells[i].SouthWallIndex = i + (maze.XSize - 1)*(processingRow - 1) - 1;
+                    _cells[i].SouthWallIndex = i + (MazeData.XSize - 1)*(processingRow - 1) - 1;
                     _cells[i].South = _setOfBreakableWalls[_cells[i].SouthWallIndex];
                 }
 
                 // increase row counter
-                if (rowCounterCheck == maze.XSize)
+                if (rowCounterCheck == MazeData.XSize)
                 {
                     processingRow++;
                     rowCounterCheck = 0;
@@ -211,7 +210,7 @@ namespace Assets.Scripts
             stack.Push(currentCell);
             var countOfVisitedCells = 1;
 
-            while (countOfVisitedCells <= maze.CellsCount)
+            while (countOfVisitedCells <= _maze.CellsCount)
             {
                 var randomChosenNeighbour = PickRandomNotVisitedCell(stack.Peek());
                 if (randomChosenNeighbour != -1)
@@ -232,7 +231,7 @@ namespace Assets.Scripts
             var cell = _cells[currentCellIndex];
             var possibleDirections = new List<Directions>();
 
-            if (cell.North != null && !_cells[currentCellIndex + maze.XSize].Visited)
+            if (cell.North != null && !_cells[currentCellIndex + MazeData.XSize].Visited)
             {
                 possibleDirections.Add(Directions.North);
             }
@@ -247,7 +246,7 @@ namespace Assets.Scripts
                 possibleDirections.Add(Directions.East);
             }
 
-            if (cell.South != null && !_cells[currentCellIndex - maze.XSize].Visited)
+            if (cell.South != null && !_cells[currentCellIndex - MazeData.XSize].Visited)
             {
                 possibleDirections.Add(Directions.South);
             }
@@ -267,7 +266,7 @@ namespace Assets.Scripts
                             Quaternion.identity);
                         tempPath.transform.parent = _pathesHolder.transform;
 
-                        return currentCellIndex + maze.XSize;
+                        return currentCellIndex + MazeData.XSize;
                     case Directions.West:
                         cell.West = null;
                         Destroy(_setOfBreakableWalls[cell.WestWallIndex]);
@@ -291,7 +290,7 @@ namespace Assets.Scripts
                             Quaternion.identity);
                         tempPath.transform.parent = _pathesHolder.transform;
 
-                        return currentCellIndex - maze.XSize;
+                        return currentCellIndex - MazeData.XSize;
                 }
             }
 
@@ -300,7 +299,7 @@ namespace Assets.Scripts
 
         private int PickRandomIntialCell()
         {
-            return Random.Range(0, maze.CellsCount);
+            return Random.Range(0, _maze.CellsCount);
         }
     }
 }
