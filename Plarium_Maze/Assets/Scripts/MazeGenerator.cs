@@ -50,8 +50,9 @@ namespace Assets.Scripts
         public int ySize;
 
         private GameObject _staticWallHolder;
-        private GameObject _cellsHoder;
+        private GameObject _cellsHolder;
         private GameObject _breakableWallsHolder;
+        private GameObject _pathesHolder;
         private Cell[] _cells;
         private GameObject[] _setOfBreakableWalls;
 
@@ -65,9 +66,10 @@ namespace Assets.Scripts
 
         private void Start()
         {
-            _staticWallHolder = new GameObject { name = "Static wall holder" };
-            _cellsHoder = new GameObject { name = "Cells holder" };
-            _breakableWallsHolder =  new GameObject { name = "Breakable walls holder" };
+            _staticWallHolder = new GameObject { name = "Static wall" };
+            _cellsHolder = new GameObject { name = "Cells" };
+            _breakableWallsHolder =  new GameObject { name = "Breakable walls" };
+            _pathesHolder = new GameObject { name = "Created pathes" };
             maze = new Maze(xSize, ySize);
 
             CreateNotBreakableWalls();
@@ -117,7 +119,7 @@ namespace Assets.Scripts
                         _cells[cellsCounter] = new Cell();
                         var cellCreatePos = new Vector2(j, i);
                         var tempOutsideWall = Instantiate(Floor, cellCreatePos, Quaternion.identity);
-                        tempOutsideWall.transform.parent = _cellsHoder.transform;
+                        tempOutsideWall.transform.parent = _cellsHolder.transform;
                         cellsCounter++;
                     }
                 }
@@ -163,31 +165,30 @@ namespace Assets.Scripts
                 // for east wall
                 if (rowCounterCheck != maze.XSize)
                 {
-                    _cells[i].East = _setOfBreakableWalls[i + processingRow * (maze.XSize - 1)];
-
                     // need all those indexes later to understand where to brake wall and build floor
                     _cells[i].EastWallIndex = i + processingRow * (maze.XSize - 1);
+                    _cells[i].East = _setOfBreakableWalls[_cells[i].EastWallIndex];
                 }
 
                 // for north wall
                 if (processingRow != maze.YSize - 1)
                 {
-                    _cells[i].North = _setOfBreakableWalls[i + (maze.XSize - 1) * (processingRow + 1)];
                     _cells[i].NorthWallIndex = i + (maze.XSize - 1)*(processingRow + 1);
+                    _cells[i].North = _setOfBreakableWalls[_cells[i].NorthWallIndex];
                 }
 
                 // for west wall
                 if (rowCounterCheck != 1)
                 {
-                    _cells[i].West = _setOfBreakableWalls[i + processingRow * (maze.XSize - 1) - 1];
                     _cells[i].WestWallIndex = i + processingRow*(maze.XSize - 1) - 1;
+                    _cells[i].West = _setOfBreakableWalls[_cells[i].WestWallIndex];
                 }
 
                 // for south wall
                 if (processingRow != 0)
                 {
-                    _cells[i].South = _setOfBreakableWalls[i + (maze.XSize - 1) * (processingRow - 1) - 1];
                     _cells[i].SouthWallIndex = i + (maze.XSize - 1)*(processingRow - 1) - 1;
+                    _cells[i].South = _setOfBreakableWalls[_cells[i].SouthWallIndex];
                 }
 
                 // increase row counter
@@ -253,32 +254,43 @@ namespace Assets.Scripts
 
             if (possibleDirections.Any())
             {
+                GameObject tempPath;
                 var randomDirectionIndex = Random.Range(0, possibleDirections.Count);
                 switch (possibleDirections[randomDirectionIndex])
                 {
                     case Directions.North:
                         cell.North = null;
+                        // destroying wall
                         Destroy(_setOfBreakableWalls[cell.NorthWallIndex]);
-                        Instantiate(Floor, _setOfBreakableWalls[cell.NorthWallIndex].transform.position,
+                        // and placing floor there
+                        tempPath = Instantiate(Floor, _setOfBreakableWalls[cell.NorthWallIndex].transform.position,
                             Quaternion.identity);
+                        tempPath.transform.parent = _pathesHolder.transform;
+
                         return currentCellIndex + maze.XSize;
                     case Directions.West:
                         cell.West = null;
                         Destroy(_setOfBreakableWalls[cell.WestWallIndex]);
-                        Instantiate(Floor, _setOfBreakableWalls[cell.WestWallIndex].transform.position,
+                        tempPath = Instantiate(Floor, _setOfBreakableWalls[cell.WestWallIndex].transform.position,
                             Quaternion.identity);
+                        tempPath.transform.parent = _pathesHolder.transform;
+
                         return currentCellIndex - 1;
                     case Directions.East:
                         cell.East = null;
                         Destroy(_setOfBreakableWalls[cell.EastWallIndex]);
-                        Instantiate(Floor, _setOfBreakableWalls[cell.EastWallIndex].transform.position,
+                        tempPath = Instantiate(Floor, _setOfBreakableWalls[cell.EastWallIndex].transform.position,
                             Quaternion.identity);
+                        tempPath.transform.parent = _pathesHolder.transform;
+
                         return currentCellIndex + 1;
                     case Directions.South:
                         cell.South = null;
                         Destroy(_setOfBreakableWalls[cell.SouthWallIndex]);
-                        Instantiate(Floor, _setOfBreakableWalls[cell.SouthWallIndex].transform.position,
+                        tempPath = Instantiate(Floor, _setOfBreakableWalls[cell.SouthWallIndex].transform.position,
                             Quaternion.identity);
+                        tempPath.transform.parent = _pathesHolder.transform;
+
                         return currentCellIndex - maze.XSize;
                 }
             }
