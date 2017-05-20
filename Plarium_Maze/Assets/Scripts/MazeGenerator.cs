@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using Random = UnityEngine.Random;
@@ -8,49 +7,39 @@ namespace Assets.Scripts
 {
     public class MazeGenerator : MonoBehaviour
     {
-        [Serializable]
-        public class Maze
+        public class Tile
         {
-            public int CellsCount;
-            public Cell[] Cells;
+            public int X;
+            public int Y;
+            public int TileType;
 
-            public Maze(int xsize, int ysize)
+            public Tile(int x, int y, int tileType)
             {
-                CellsCount = xsize * ysize;
-                Cells = new Cell[CellsCount];
+                X = x;
+                Y = y;
+                TileType = tileType;
             }
         }
 
-        [Serializable]
-        public class Cell
+        public TileType[] TileTypes;
+        private Tile[,] _tiles;
+
+        private class Cell
         {
             public bool Visited;
 
-            public GameObject North;
-            public int NorthWallIndex;
-
-            public GameObject East;
-            public int EastWallIndex;
-
-            public GameObject West;
-            public int WestWallIndex;
-
-            public GameObject South;
-            public int SouthWallIndex;
+            public int X;
+            public int Y;
         }
 
-        private Maze _maze;
         public GameObject Wall;
         public GameObject Floor;
         public int XSize;
         public int YSize;
 
-        private GameObject _staticWallHolder;
-        private GameObject _cellsHolder;
-        private GameObject _breakableWallsHolder;
-        private GameObject _pathesHolder;
         private Cell[] _cells;
-        private GameObject[] _setOfBreakableWalls;
+        private int _cellsCount;
+        private GameObject _mazeHolder;
 
         private enum Directions
         {
@@ -62,20 +51,39 @@ namespace Assets.Scripts
 
         private void Awake()
         {
+            _mazeHolder = new GameObject { name = "Maze holder" };
             MazeData.XSize = XSize;
             MazeData.YSize = YSize;
+            _cellsCount = XSize*YSize;
 
-            _staticWallHolder = new GameObject { name = "Static wall" };
-            _cellsHolder = new GameObject { name = "Cells" };
-            _breakableWallsHolder =  new GameObject { name = "Breakable walls" };
-            _pathesHolder = new GameObject { name = "Created pathes" };
-            _maze = new Maze(XSize, YSize);
+            _tiles = new Tile[XSize * 2 + 1, YSize * 2 + 1];
+
+            for (var i = 0; i <= XSize*2; i++)
+            {
+                for (var j = 0; j <= YSize*2; j++)
+                {
+                    _tiles[j, i] = new Tile(j, i, 0);
+                }
+            }
 
             CreateNotBreakableWalls();
-            CreateStaticFloor();
             CreateBreakableWalls();
             CreateCells();
             CreateLabyrinth();
+            InstantiateMap();
+        }
+
+        private void InstantiateMap()
+        {
+            for (var i = 0; i <= YSize * 2; i++)
+            {
+                for (var j = 0; j <= XSize * 2; j++)
+                {
+                    TileType tt = TileTypes[_tiles[i, j].TileType];
+                    var tempTile = Instantiate(tt.TileVisualPrefab, new Vector3(i, j, 0), Quaternion.identity);
+                    tempTile.transform.parent = _mazeHolder.transform;
+                }
+            }
         }
 
         private void CreateNotBreakableWalls()
@@ -89,37 +97,13 @@ namespace Assets.Scripts
                     // check for outside walls
                     if (j == 0 || i == 0 || j == MazeData.XSize * 2 || i == MazeData.YSize * 2)
                     {
-                        var outsideWallCreatePos = new Vector2(j, i);
-                        var tempOutsideWall = Instantiate(Wall, outsideWallCreatePos, Quaternion.identity);
-                        tempOutsideWall.transform.parent = _staticWallHolder.transform;
+                        // 1 represents wall for now
+                        _tiles[j, i] = new Tile(j, i, 1);
                     }
                     // concerning that walls are squares there are some walls inside that cannot be broken
                     if (j != 0 && i != 0 && j % 2 == 0 && i % 2 == 0)
                     {
-                        var outsideWallCreatePos = new Vector2(j, i);
-                        var tempOutsideWall = Instantiate(Wall, outsideWallCreatePos, Quaternion.identity);
-                        tempOutsideWall.transform.parent = _staticWallHolder.transform;
-                    }
-                }
-            }
-        }
-
-        private void CreateStaticFloor()
-        {
-            // instantiating cells
-            _cells = new Cell[_maze.CellsCount];
-            var cellsCounter = 0;
-            for (var i = 0; i < MazeData.YSize * 2; i++)
-            {
-                for (var j = 0; j < MazeData.XSize * 2; j++)
-                {
-                    if (i != 0 && j != 0 && i % 2 != 0 && j % 2 != 0)
-                    {
-                        _cells[cellsCounter] = new Cell();
-                        var cellCreatePos = new Vector2(j, i);
-                        var tempOutsideWall = Instantiate(Floor, cellCreatePos, Quaternion.identity);
-                        tempOutsideWall.transform.parent = _cellsHolder.transform;
-                        cellsCounter++;
+                        _tiles[j, i] = new Tile(j, i, 1);
                     }
                 }
             }
@@ -128,17 +112,15 @@ namespace Assets.Scripts
         private void CreateBreakableWalls()
         {
             // basically creating breakable walls inside of our maze
-            for (var i = 0; i < MazeData.YSize * 2; i++)
+            for (var i = 0; i <= MazeData.YSize * 2; i++)
             {
-                for (var j = 0; j < MazeData.XSize * 2; j++)
+                for (var j = 0; j <= MazeData.XSize * 2; j++)
                 {
-                    if (i != 0 && j != 0)
+                    if (i != 0 && j != 0 && i != XSize * 2 && j != YSize * 2)
                     {
                         if (i % 2 != 0 && j % 2 == 0 || i % 2 == 0 && j % 2 != 0)
                         {
-                            var cellCreatePos = new Vector2(j, i);
-                            var tempOutsideWall = Instantiate(Wall, cellCreatePos, Quaternion.identity);
-                            tempOutsideWall.transform.parent = _breakableWallsHolder.transform;
+                            _tiles[j, i] = new Tile(j, i, 2);
                         }
                     }
                 }
@@ -148,56 +130,23 @@ namespace Assets.Scripts
         private void CreateCells()
         {
             // this method is just for assigning right walls for right cells for A* Depth algorithm needs
-
-            var processingRow = 0;
-            var rowCounterCheck = 1;
-
-            _setOfBreakableWalls = new GameObject[_breakableWallsHolder.transform.childCount];
-
-            for (var i = 0; i < _setOfBreakableWalls.Length; i++)
+            _cells = new Cell[XSize * YSize];
+            var cellsCounter = 0;
+            for (var i = 1; i < YSize * 2; i++)
             {
-                _setOfBreakableWalls[i] = _breakableWallsHolder.transform.GetChild(i).gameObject;
-            }
-
-            for (var i = 0; i < _maze.CellsCount; i++)
-            {
-                // for east wall
-                if (rowCounterCheck != MazeData.XSize)
+                for (var j = 1; j < XSize * 2; j++)
                 {
-                    // need all those indexes later to understand where to brake wall and build floor
-                    _cells[i].EastWallIndex = i + processingRow * (MazeData.XSize - 1);
-                    _cells[i].East = _setOfBreakableWalls[_cells[i].EastWallIndex];
+                    if (_tiles[j, i].TileType == 0)
+                    {
+                        _cells[cellsCounter] = new Cell
+                        {
+                            X = j,
+                            Y = i,
+                            Visited = false
+                        };
+                        cellsCounter++;
+                    }
                 }
-
-                // for north wall
-                if (processingRow != MazeData.YSize - 1)
-                {
-                    _cells[i].NorthWallIndex = i + (MazeData.XSize - 1)*(processingRow + 1);
-                    _cells[i].North = _setOfBreakableWalls[_cells[i].NorthWallIndex];
-                }
-
-                // for west wall
-                if (rowCounterCheck != 1)
-                {
-                    _cells[i].WestWallIndex = i + processingRow*(MazeData.XSize - 1) - 1;
-                    _cells[i].West = _setOfBreakableWalls[_cells[i].WestWallIndex];
-                }
-
-                // for south wall
-                if (processingRow != 0)
-                {
-                    _cells[i].SouthWallIndex = i + (MazeData.XSize - 1)*(processingRow - 1) - 1;
-                    _cells[i].South = _setOfBreakableWalls[_cells[i].SouthWallIndex];
-                }
-
-                // increase row counter
-                if (rowCounterCheck == MazeData.XSize)
-                {
-                    processingRow++;
-                    rowCounterCheck = 0;
-                }
-
-                rowCounterCheck++;
             }
         }
 
@@ -206,13 +155,14 @@ namespace Assets.Scripts
             // implementation of an A* Depth algorithm is beneath
 
             var currentCell = PickRandomIntialCell();
+            _cells[currentCell].Visited = true;
             var stack = new Stack<int>();
             stack.Push(currentCell);
             var countOfVisitedCells = 1;
 
-            while (countOfVisitedCells <= _maze.CellsCount)
+            while (countOfVisitedCells < _cells.Length)
             {
-                var randomChosenNeighbour = PickRandomNotVisitedCell(stack.Peek());
+                var randomChosenNeighbour = PickRandomNotVisitedCellIndex(stack.Peek());
                 if (randomChosenNeighbour != -1)
                 {
                     _cells[randomChosenNeighbour].Visited = true;
@@ -226,80 +176,63 @@ namespace Assets.Scripts
             }
         }
 
-        private int PickRandomNotVisitedCell(int currentCellIndex)
+        private int PickRandomNotVisitedCellIndex(int currentCellIndex)
         {
-            var cell = _cells[currentCellIndex];
+            Cell cell = _cells[currentCellIndex];
             var possibleDirections = new List<Directions>();
 
-            if (cell.North != null && !_cells[currentCellIndex + MazeData.XSize].Visited)
+            if (currentCellIndex + XSize < _cellsCount &&
+                !_cells[currentCellIndex + XSize].Visited && _tiles[cell.X, cell.Y + 1].TileType == 2)
             {
                 possibleDirections.Add(Directions.North);
             }
 
-            if (cell.West != null && !_cells[currentCellIndex - 1].Visited)
+            if (currentCellIndex - 1 >=  0 && !_cells[currentCellIndex - 1].Visited && _tiles[cell.X - 1, cell.Y].TileType == 2)
             {
                 possibleDirections.Add(Directions.West);
             }
 
-            if (cell.East != null && !_cells[currentCellIndex + 1].Visited)
+            if (currentCellIndex + 1 < _cellsCount && !_cells[currentCellIndex + 1].Visited && _tiles[cell.X + 1, cell.Y].TileType == 2)
             {
                 possibleDirections.Add(Directions.East);
             }
 
-            if (cell.South != null && !_cells[currentCellIndex - MazeData.XSize].Visited)
+            if (currentCellIndex - XSize >= 0 &&
+                !_cells[currentCellIndex - XSize].Visited && _tiles[cell.X, cell.Y - 1].TileType == 2)
             {
                 possibleDirections.Add(Directions.South);
             }
 
             if (possibleDirections.Any())
             {
-                GameObject tempPath;
                 var randomDirectionIndex = Random.Range(0, possibleDirections.Count);
                 switch (possibleDirections[randomDirectionIndex])
                 {
                     case Directions.North:
-                        cell.North = null;
-                        // destroying wall
-                        Destroy(_setOfBreakableWalls[cell.NorthWallIndex]);
-                        // and placing floor there
-                        tempPath = Instantiate(Floor, _setOfBreakableWalls[cell.NorthWallIndex].transform.position,
-                            Quaternion.identity);
-                        tempPath.transform.parent = _pathesHolder.transform;
+                        _tiles[cell.X, cell.Y + 1].TileType = 0;
 
-                        return currentCellIndex + MazeData.XSize;
+                        return currentCellIndex + XSize;
                     case Directions.West:
-                        cell.West = null;
-                        Destroy(_setOfBreakableWalls[cell.WestWallIndex]);
-                        tempPath = Instantiate(Floor, _setOfBreakableWalls[cell.WestWallIndex].transform.position,
-                            Quaternion.identity);
-                        tempPath.transform.parent = _pathesHolder.transform;
+                        _tiles[cell.X - 1, cell.Y].TileType = 0;
 
                         return currentCellIndex - 1;
                     case Directions.East:
-                        cell.East = null;
-                        Destroy(_setOfBreakableWalls[cell.EastWallIndex]);
-                        tempPath = Instantiate(Floor, _setOfBreakableWalls[cell.EastWallIndex].transform.position,
-                            Quaternion.identity);
-                        tempPath.transform.parent = _pathesHolder.transform;
+                        _tiles[cell.X + 1, cell.Y].TileType = 0;
 
                         return currentCellIndex + 1;
                     case Directions.South:
-                        cell.South = null;
-                        Destroy(_setOfBreakableWalls[cell.SouthWallIndex]);
-                        tempPath = Instantiate(Floor, _setOfBreakableWalls[cell.SouthWallIndex].transform.position,
-                            Quaternion.identity);
-                        tempPath.transform.parent = _pathesHolder.transform;
+                        _tiles[cell.X, cell.Y - 1].TileType = 0;
 
-                        return currentCellIndex - MazeData.XSize;
+                        return currentCellIndex - XSize;
                 }
             }
 
             return -1;
-        } 
+        }
 
         private int PickRandomIntialCell()
         {
-            return Random.Range(0, _maze.CellsCount);
+            return Random.Range(0, _cells.Length);
         }
     }
 }
