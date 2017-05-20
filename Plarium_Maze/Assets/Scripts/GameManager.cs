@@ -13,12 +13,13 @@ namespace Assets.Scripts
         public GameObject GroundTile;
         public GameObject WallTile;
 
+        public int MaxCoinCount;
+        public float CoinAddingRangeTime;
+        public int CoinsNeededForSecondZombieSpawn;
+        public int CoinsNeededForMummySpawn;
+
         private MazeGenerator _mazeGenerator;
         private GameObject _mazeHolder;
-        private const int MaxCoinCount = 10;
-        private const float CoinAddingRangeTime = 5f;
-        private const int CoinsNeededForSecondZombieSpawn = 5;
-        private const int CoinsNeededForMummySpawn = 10;
         private bool _mummyIsEnabled;
         private bool _secondZombieIsEnabled;
         private float _coinTimer;
