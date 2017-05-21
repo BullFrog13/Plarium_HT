@@ -5,24 +5,22 @@ using Random = UnityEngine.Random;
 
 namespace Assets.Scripts
 {
-    public class ZombieManager : MonoBehaviour
-    {
+    public class MummyManager : MonoBehaviour {
         public float Speed;
-
+        public GameObject Player;
         private GameManager _gm;
+        private bool _followPlayer;
         private GameObject _chosenTileToFollow;
-        private GameObject _player;
 
         private int _tileX;
         private int _tileY;
-        private int _cachedCoinsCount;
         private float _horizontalSpeed;
         private float _verticalSpeed;
-        private bool _followPlayer;
         private bool _movingRight;
         private bool _movingLeft;
         private bool _movingUp;
         private bool _movingDown;
+        private int _cachedCoinsCount;
 
         public List<GameManager.Node> CurrentPath;
 
@@ -30,7 +28,7 @@ namespace Assets.Scripts
         {
             _followPlayer = false;
             _gm = GameObject.Find("Game Manager").GetComponent<GameManager>();
-            _player = GameObject.FindGameObjectWithTag("Player");
+            Player = GameObject.Find("Player(Clone)");
             _tileX = (int)transform.position.x;
             _tileY = (int)transform.position.y;
         }
@@ -50,8 +48,8 @@ namespace Assets.Scripts
 
             if (_followPlayer)
             {
-               FollowObject(_player);
-               MoveObject();
+                FollowObject(Player);
+                MoveObject();
             }
             else
             {
@@ -68,10 +66,9 @@ namespace Assets.Scripts
 
         private void MoveObject()
         {
-
             var actualSpeedX = _horizontalSpeed * Speed;
             var actualSpeedY = _verticalSpeed * Speed;
-            GetComponent<Rigidbody2D>().velocity = new Vector2(actualSpeedX, actualSpeedY); 
+            GetComponent<Rigidbody2D>().velocity = new Vector2(actualSpeedX, actualSpeedY);
         }
 
         private void OnCollisionEnter2D(Collision2D collision2D)

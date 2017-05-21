@@ -85,6 +85,11 @@ namespace Assets.Scripts
                 MazeData.CollectedCoins++;
                 Destroy(other.gameObject);
             }
+
+            if (other.gameObject.tag.Equals("zombie") || other.gameObject.tag.Equals("mummy"))
+            {
+                
+            }
         }
     }
 }

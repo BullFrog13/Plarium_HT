@@ -70,7 +70,6 @@ namespace Assets.Scripts
             }
         }
 
-        // class for pathfinding graph
         // TODO use tiles instead of Nodes
         public class Node
         {

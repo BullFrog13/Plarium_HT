@@ -109,7 +109,7 @@ MonoBehaviour:
   m_MinSize: {x: 713, y: 492}
   m_MaxSize: {x: 18008, y: 14042}
   vertical: 0
-  controlID: 9
+  controlID: 33
 --- !u!114 &6
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -133,7 +133,7 @@ MonoBehaviour:
   m_MinSize: {x: 436, y: 492}
   m_MaxSize: {x: 14006, y: 14042}
   vertical: 1
-  controlID: 10
+  controlID: 34
 --- !u!114 &7
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -494,18 +494,18 @@ MonoBehaviour:
     m_ShowAllHits: 0
     m_SearchArea: 0
     m_Folders:
-    - Assets
+    - Assets/Prefabs
   m_ViewMode: 1
   m_StartGridSize: 16
   m_LastFolders:
-  - Assets
+  - Assets/Prefabs
   m_LastFoldersGridSize: 16
   m_LastProjectPath: "C:\\Users\\\u0422\u043A\u0430\u0447\u0435\u043D\u043A\u043E\\Desktop\\Plarium_HT\\Plarium_Maze"
   m_IsLocked: 0
   m_FolderTreeState:
     scrollPos: {x: 0, y: 0}
-    m_SelectedIDs: be240000
-    m_LastClickedID: 9406
+    m_SelectedIDs: 7a250000
+    m_LastClickedID: 9594
     m_ExpandedIDs: 00000000be240000e024000062250000ffffff7f
     m_RenameOverlay:
       m_UserAcceptedRename: 0
@@ -561,7 +561,7 @@ MonoBehaviour:
   m_ListAreaState:
     m_SelectedInstanceIDs: 
     m_LastClickedInstanceID: 0
-    m_HadKeyboardFocusLastEvent: 0
+    m_HadKeyboardFocusLastEvent: 1
     m_ExpandedInstanceIDs: 961d0000000000004a2600003a250000
     m_RenameOverlay:
       m_UserAcceptedRename: 0
@@ -650,8 +650,8 @@ MonoBehaviour:
     height: 302
   m_TreeViewState:
     scrollPos: {x: 0, y: 0}
-    m_SelectedIDs: fa250000
-    m_LastClickedID: 9722
+    m_SelectedIDs: 64250000
+    m_LastClickedID: 0
     m_ExpandedIDs: e2fbffff00000000
     m_RenameOverlay:
       m_UserAcceptedRename: 0
