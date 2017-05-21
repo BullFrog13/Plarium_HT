@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -13,7 +12,6 @@ namespace Assets.Scripts
         public GameObject Player;
         public GameObject Zombie;
         public GameObject Mummy;
-        public GameObject TestObjectForNavigation;
         public GameObject GroundTile;
         public GameObject WallTile;
 
@@ -27,9 +25,7 @@ namespace Assets.Scripts
         private bool _mummyIsEnabled;
         private bool _secondZombieIsEnabled;
         private float _coinTimer;
-        private Transform _instanceOfTestObjectNav;
-        private Node[,] _graph;
-        private List<Node> _currentPath;
+        public Node[,] Graph;
 
         private void Awake()
         {
@@ -43,11 +39,8 @@ namespace Assets.Scripts
             _mummyIsEnabled = false;
             _coinTimer = CoinAddingRangeTime;
 
-            //AddItemIntoMaze(Player);
-            AddItemIntoMaze(TestObjectForNavigation);
-            _instanceOfTestObjectNav = GameObject.Find("Test Object(Clone)").transform;
-            _instanceOfTestObjectNav.GetComponent<Unit>().tileX = (int)_instanceOfTestObjectNav.position.x;
-            _instanceOfTestObjectNav.GetComponent<Unit>().tileY = (int)_instanceOfTestObjectNav.position.y;
+            AddItemIntoMaze(Player);
+            AddItemIntoMaze(Zombie);
         }
 
         private void Update()
@@ -98,16 +91,15 @@ namespace Assets.Scripts
             }
         }
 
-
         private void GeneratePathfindingGraph()
         {
-            _graph = new Node[XSize * 2, YSize * 2];
+            Graph = new Node[XSize * 2, YSize * 2];
 
             for (var i = 0; i < YSize*2; i++)
             {
                 for (var j = 0; j < XSize*2; j++)
                 {
-                    _graph[j, i] = new Node
+                    Graph[j, i] = new Node
                     {
                         X = j,
                         Y = i,
@@ -123,19 +115,19 @@ namespace Assets.Scripts
                     // adding nodes
                     if (j > 0)
                     {
-                        _graph[j, i]._neighbours.Add(_graph[j - 1, i]);
+                        Graph[j, i]._neighbours.Add(Graph[j - 1, i]);
                     }
                     if (j < XSize * 2 - 1)
                     {
-                        _graph[j, i]._neighbours.Add(_graph[j + 1, i]);
+                        Graph[j, i]._neighbours.Add(Graph[j + 1, i]);
                     }
                     if (i > 0)
                     {
-                        _graph[j, i]._neighbours.Add(_graph[j, i - 1]);
+                        Graph[j, i]._neighbours.Add(Graph[j, i - 1]);
                     }
                     if (i < YSize * 2 - 1)
                     {
-                        _graph[j, i]._neighbours.Add(_graph[j, i + 1]);
+                        Graph[j, i]._neighbours.Add(Graph[j, i + 1]);
                     }
                 }
             }
@@ -151,110 +143,15 @@ namespace Assets.Scripts
                     var tempTile = Instantiate(isWalkable ? GroundTile : WallTile, new Vector3(i, j, 0), Quaternion.identity);
                     if (isWalkable)
                     {
-                        var ct = tempTile.GetComponent<ClickableTile>();
-                        ct.X = i;
-                        ct.Y = j;
-                        ct.Man = this;
+                        var ct = new Tile(j, i)
+                        {
+                            X = i,
+                            Y = j
+                        };
                     }
                     tempTile.transform.parent = _mazeHolder.transform;
                 }
             }
-        }
-
-        public Vector2 TileCoordToWorldCoord(int x, int y)
-        {
-            return new Vector2(x, y);
-        }
-
-        public void GenerateTheShortestPath(int x, int y)
-        {
-            _instanceOfTestObjectNav.GetComponent<Unit>().CurrentPath = null;
-
-            var dist = new Dictionary<Node, float>();
-            var prev = new Dictionary<Node, Node>();
-
-            var unvisited = new List<Node>();
-
-            Node source =
-                _graph[
-                    _instanceOfTestObjectNav.GetComponent<Unit>().tileX,
-                    _instanceOfTestObjectNav.GetComponent<Unit>().tileY];
-            Node target = _graph[x, y];
-
-            dist[source] = 0;
-            prev[source] = null;
-
-            // init everything to INFINITE.
-            foreach (var node in _graph)
-            {
-                if (node != source)
-                {
-                    dist[node] = Mathf.Infinity;
-                    prev[node] = null;
-                }
-
-                unvisited.Add(node);
-            }
-
-            while (unvisited.Count > 0)
-            {
-                Node u = null;
-
-                foreach (var node in unvisited)
-                {
-                    if (u == null || dist[node] < dist[u])
-                    {
-                        u = node;
-                    }
-                }
-
-                if (u == target)
-                {
-                    break;
-                }
-
-                unvisited.Remove(u);
-
-                foreach (var neighbour in u._neighbours)
-                {
-                    float alt;
-                    if (_graph[neighbour.X, neighbour.Y].Walkable)
-                    {
-                        alt = dist[u] + u.DistanceTo(neighbour);
-                    }
-                    else
-                    {
-                        alt = dist[u] + Mathf.Infinity;
-                    }
-
-                    if (alt < dist[neighbour])
-                    {
-                        dist[neighbour] = alt;
-                        prev[neighbour] = u;
-                    }
-                }
-            }
-
-            if (prev[target] == null)
-            {
-                return;
-            }
-
-            _currentPath = new List<Node>();
-
-            Node currentNode = target;
-
-            while (currentNode != null)
-            {
-                _currentPath.Add(currentNode);
-                currentNode = prev[currentNode];
-            }
-
-            _currentPath.Reverse();
-
-            _instanceOfTestObjectNav.GetComponent<Unit>().CurrentPath = _currentPath;
-            _instanceOfTestObjectNav.GetComponent<Unit>().tileX = x;
-            _instanceOfTestObjectNav.GetComponent<Unit>().tileY = y;
         }
 
         private void AddItemIntoMaze(GameObject objectToAdd)
