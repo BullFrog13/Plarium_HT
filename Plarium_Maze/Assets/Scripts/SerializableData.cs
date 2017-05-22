@@ -1,10 +1,21 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Xml.Linq;
 
 namespace Assets.Scripts
 {
     public class SerializableData
     {
+        public string Name { get; set; }
+
+        public int Score { get; set; }
+
+        public float SecondSpent { get; set; }
+
+        public DateTime GameStarted { get; set; }
+
+        public string FinishReason { get; set; }
+
         public static void SaveData(string path)
         {
             XDocument xDocument;
