@@ -6,6 +6,9 @@ namespace Assets.Scripts
     {
         public float Speed;
 
+        [HideInInspector]
+        public static bool IsDead;
+
         private bool _facingRight;
         private float _speedX;
         private float _speedY;
@@ -14,6 +17,7 @@ namespace Assets.Scripts
 
         private void Start()
         {
+            EnablePlayer();
             _rb = GetComponent<Rigidbody2D>();
             _animator = GetComponent<Animator>();
             _facingRight = true;
@@ -23,6 +27,15 @@ namespace Assets.Scripts
         {
             MovePlayer(_speedX, _speedY);
             FlipPlayer();
+
+            if (_speedX == 0 && _speedY == 0)
+            {
+                _animator.enabled = false;
+            }
+            else
+            {
+                _animator.enabled = true;
+            }
 
             if(Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow))
             {
@@ -82,14 +95,32 @@ namespace Assets.Scripts
             if (other.gameObject.tag.Equals("coin"))
             {
                 MazeData.CurrentCointCount--;
-                MazeData.CollectedCoins++;
+                MazeData.Score++;
                 Destroy(other.gameObject);
             }
-
-            if (other.gameObject.tag.Equals("zombie") || other.gameObject.tag.Equals("mummy"))
+            if (other.gameObject.tag.Equals("zombie"))
             {
-                
+                IsDead = true;
+                DisablePlayer();
+                MazeData.FinishReason = "Eaten by zombie";
             }
+            if (other.gameObject.tag.Equals("mummy"))
+            {
+                IsDead = true;
+                DisablePlayer();
+                MazeData.Score = 0;
+                MazeData.FinishReason = "Eaten by mummy";
+            }
+        }
+
+        private void DisablePlayer()
+        {
+            gameObject.SetActive(false);
+        }
+
+        private void EnablePlayer()
+        {
+            gameObject.SetActive(true);
         }
     }
 }

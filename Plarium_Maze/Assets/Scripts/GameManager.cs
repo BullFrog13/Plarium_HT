@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+﻿using System;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -14,6 +14,7 @@ namespace Assets.Scripts
         public GameObject Mummy;
         public GameObject GroundTile;
         public GameObject WallTile;
+        public GameObject PausePanel;
 
         public int MaxCoinCount;
         public float CoinAddingRangeTime;
@@ -29,6 +30,9 @@ namespace Assets.Scripts
 
         private void Awake()
         {
+            ResetValues();
+            PausePanel.SetActive(false);
+
             _mazeHolder = new GameObject { name = "Maze holder" };
            _mazeGenerator = new MazeGenerator();
             _mazeGenerator.GenerateMaze(XSize, YSize);
@@ -43,8 +47,43 @@ namespace Assets.Scripts
             AddItemIntoMaze(Zombie);
         }
 
+        private void Start()
+        {
+            MazeData.GameStarted = DateTime.Now;
+        }
+
+        private void ResetValues()
+        {
+            MazeData.Score = 0;
+            MazeData.CurrentCointCount = 0;
+            MazeData.SecondsSpent = 0;
+            MazeData.FinishReason = "Unknown";
+            PlayerManager.IsDead = false;
+        }
+
+        private void StopGame()
+        {
+            PausePanel.SetActive(true);
+        }
+
         private void Update()
         {
+            MazeData.SecondsSpent += Time.deltaTime;
+            if (Input.GetKeyDown(KeyCode.Escape))
+            {
+                MazeData.FinishReason = "Was too weak to fight further";
+                SerializableData.SaveData("data.xml");
+                Application.Quit();
+            }
+            if (PlayerManager.IsDead)
+            {
+                if (!PausePanel.activeInHierarchy)
+                {
+                    StopGame();
+                    SerializableData.SaveData("data.xml");
+                }
+            }
+
             if (MazeData.CurrentCointCount < MaxCoinCount)
             {
                 _coinTimer -= Time.deltaTime;
@@ -57,36 +96,16 @@ namespace Assets.Scripts
                 }
             }
 
-            if (MazeData.CollectedCoins == CoinsNeededForSecondZombieSpawn && !_secondZombieIsEnabled)
+            if (MazeData.Score >= CoinsNeededForSecondZombieSpawn && !_secondZombieIsEnabled)
             {
                 AddItemIntoMaze(Zombie);
                 _secondZombieIsEnabled = true;
             }
 
-            if (MazeData.CollectedCoins == CoinsNeededForMummySpawn && !_mummyIsEnabled)
+            if (MazeData.Score >= CoinsNeededForMummySpawn && !_mummyIsEnabled)
             {
                 AddItemIntoMaze(Mummy);
                 _mummyIsEnabled = true;
-            }
-        }
-
-        // TODO use tiles instead of Nodes
-        public class Node
-        {
-            // these are edges remake to array TODO
-            public List<Node> _neighbours;
-            public int X;
-            public int Y;
-            public bool Walkable;
-
-            public Node()
-            {
-                _neighbours = new List<Node>();
-            }
-
-            public float DistanceTo(Node otherNode)
-            {
-                return Vector2.Distance(new Vector2(X, Y), new Vector2(otherNode.X, otherNode.Y));
             }
         }
 
@@ -114,19 +133,19 @@ namespace Assets.Scripts
                     // adding nodes
                     if (j > 0)
                     {
-                        Graph[j, i]._neighbours.Add(Graph[j - 1, i]);
+                        Graph[j, i].Neighbours.Add(Graph[j - 1, i]);
                     }
                     if (j < XSize * 2 - 1)
                     {
-                        Graph[j, i]._neighbours.Add(Graph[j + 1, i]);
+                        Graph[j, i].Neighbours.Add(Graph[j + 1, i]);
                     }
                     if (i > 0)
                     {
-                        Graph[j, i]._neighbours.Add(Graph[j, i - 1]);
+                        Graph[j, i].Neighbours.Add(Graph[j, i - 1]);
                     }
                     if (i < YSize * 2 - 1)
                     {
-                        Graph[j, i]._neighbours.Add(Graph[j, i + 1]);
+                        Graph[j, i].Neighbours.Add(Graph[j, i + 1]);
                     }
                 }
             }

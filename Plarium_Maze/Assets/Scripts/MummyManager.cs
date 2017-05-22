@@ -6,8 +6,12 @@ using Random = UnityEngine.Random;
 namespace Assets.Scripts
 {
     public class MummyManager : MonoBehaviour {
+
         public float Speed;
-        public GameObject Player;
+        public int CoinsToFollowPlayer;
+        public float SpeedIncreasePercent;
+
+        private GameObject _player;
         private GameManager _gm;
         private bool _followPlayer;
         private GameObject _chosenTileToFollow;
@@ -20,35 +24,38 @@ namespace Assets.Scripts
         private bool _movingLeft;
         private bool _movingUp;
         private bool _movingDown;
-        private int _cachedCoinsCount;
+        private int _cachedScore;
+        private bool _facingRight;
 
-        public List<GameManager.Node> CurrentPath;
+        public List<Node> CurrentPath;
 
         public void Start()
         {
+            _facingRight = false;
             _followPlayer = false;
             _gm = GameObject.Find("Game Manager").GetComponent<GameManager>();
-            Player = GameObject.Find("Player(Clone)");
+            _player = GameObject.FindGameObjectWithTag("Player");
             _tileX = (int)transform.position.x;
             _tileY = (int)transform.position.y;
         }
 
         private void Update()
         {
-            if (MazeData.CollectedCoins == 10)
+            if (MazeData.Score == CoinsToFollowPlayer && !_followPlayer)
             {
                 _followPlayer = true;
+                _cachedScore = MazeData.Score;
             }
 
-            if (MazeData.CollectedCoins > 10 && MazeData.CollectedCoins != _cachedCoinsCount)
+            if (MazeData.Score > CoinsToFollowPlayer && MazeData.Score > _cachedScore)
             {
-                Speed *= 1.05F;
-                _cachedCoinsCount++;
+                Speed += Speed / 100 * SpeedIncreasePercent;
+                _cachedScore++;
             }
 
             if (_followPlayer)
             {
-                FollowObject(Player);
+                FollowObject(_player);
                 MoveObject();
             }
             else
@@ -60,6 +67,7 @@ namespace Assets.Scripts
                 }
 
                 FollowObject(_chosenTileToFollow);
+                Flip();
                 MoveObject();
             }
         }
@@ -71,18 +79,20 @@ namespace Assets.Scripts
             GetComponent<Rigidbody2D>().velocity = new Vector2(actualSpeedX, actualSpeedY);
         }
 
-        private void OnCollisionEnter2D(Collision2D collision2D)
+        private void Flip()
         {
-            if (collision2D.gameObject.tag == "zombie" || collision2D.gameObject.tag == "mummy")
+            if (_horizontalSpeed > 0 && !_facingRight || _horizontalSpeed < 0 && _facingRight)
             {
-                Physics2D.IgnoreCollision(collision2D.collider, GetComponent<Collider2D>());
+                _facingRight = !_facingRight;
+                Vector2 temp = transform.localScale;
+                temp.x *= -1;
+                transform.localScale = temp;
             }
         }
 
         private void FollowObject(GameObject targetGameObject)
         {
             GenerateTheShortestPath((int)Math.Round(targetGameObject.transform.position.x), (int)Math.Round(targetGameObject.transform.position.y));
-            var rb = GetComponent<Rigidbody2D>();
 
             if (CurrentPath != null)
             {
@@ -114,7 +124,7 @@ namespace Assets.Scripts
                     _tileY = (int)Mathf.Floor(transform.position.y);
                 }
 
-                GameManager.Node nextTile = null;
+                Node nextTile = null;
                 if (CurrentPath != null)
                 {
                     nextTile = CurrentPath[1];
@@ -164,7 +174,6 @@ namespace Assets.Scripts
 
                 if (_movingRight)
                 {
-                    //if(Math.Abs(transform.position.x - nextTile.X) <= Math.Abs(transform.position.x * .001))
                     if (_movingRight && _horizontalSpeed == 0)
                     {
                         CurrentPath.Remove(nextTile);
@@ -174,7 +183,6 @@ namespace Assets.Scripts
                 }
                 if (_movingLeft && _horizontalSpeed == 0)
                 {
-                    //if (Math.Abs(transform.position.x - nextTile.X) <= Math.Abs(transform.position.x * .001))
                     if (_movingLeft && _horizontalSpeed == 0)
                     {
                         CurrentPath.Remove(nextTile);
@@ -184,7 +192,6 @@ namespace Assets.Scripts
                 }
                 if (_movingUp && _verticalSpeed == 0)
                 {
-                    //if (Math.Abs(transform.position.y - nextTile.Y) <= Math.Abs(transform.position.y * .001))
                     if (_movingUp && _verticalSpeed == 0)
                     {
                         CurrentPath.Remove(nextTile);
@@ -194,7 +201,6 @@ namespace Assets.Scripts
                 }
                 if (_movingDown && _verticalSpeed == 0)
                 {
-                    //if (Math.Abs(transform.position.y - nextTile.Y) <= Math.Abs(transform.position.y * .001))
                     if (_movingDown && _verticalSpeed == 0)
                     {
                         CurrentPath.Remove(nextTile);
@@ -221,10 +227,10 @@ namespace Assets.Scripts
         {
             CurrentPath = null;
 
-            var dist = new Dictionary<GameManager.Node, float>();
-            var prev = new Dictionary<GameManager.Node, GameManager.Node>();
+            var dist = new Dictionary<Node, float>();
+            var prev = new Dictionary<Node, Node>();
 
-            var unvisited = new List<GameManager.Node>();
+            var unvisited = new List<Node>();
 
             var source = _gm.Graph[_tileX, _tileY];
             var target = _gm.Graph[x, y];
@@ -246,7 +252,7 @@ namespace Assets.Scripts
 
             while (unvisited.Count > 0)
             {
-                GameManager.Node u = null;
+                Node u = null;
 
                 foreach (var node in unvisited)
                 {
@@ -263,7 +269,7 @@ namespace Assets.Scripts
 
                 unvisited.Remove(u);
 
-                foreach (var neighbour in u._neighbours)
+                foreach (var neighbour in u.Neighbours)
                 {
                     float alt;
                     if (_gm.Graph[neighbour.X, neighbour.Y].Walkable)
@@ -288,9 +294,9 @@ namespace Assets.Scripts
                 return;
             }
 
-            CurrentPath = new List<GameManager.Node>();
+            CurrentPath = new List<Node>();
 
-            GameManager.Node currentNode = target;
+            Node currentNode = target;
 
             while (currentNode != null)
             {
