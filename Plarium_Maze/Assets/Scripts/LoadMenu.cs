@@ -2,18 +2,21 @@
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-public class LoadMenu : MonoBehaviour
+namespace Assets.Scripts
 {
-    private Button _button;
-
-    private void Start()
+    public class LoadMenu : MonoBehaviour
     {
-        _button = GetComponent<Button>();
-        _button.onClick.AddListener(onButtonClick);
-    }
+        private Button _button;
 
-    private void onButtonClick()
-    {
-        SceneManager.LoadScene("Menu");
+        private void Start()
+        {
+            _button = GetComponent<Button>();
+            _button.onClick.AddListener(onButtonClick);
+        }
+
+        private void onButtonClick()
+        {
+            SceneManager.LoadScene("Menu");
+        }
     }
 }

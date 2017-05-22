@@ -10,7 +10,6 @@ namespace Assets.Scripts
         public int CoinsToFollowPlayer;
         public float SpeedIncreasePercent;
 
-        private GameManager _gm;
         private GameObject _chosenTileToFollow;
         private GameObject _player;
 
@@ -36,7 +35,6 @@ namespace Assets.Scripts
 
         public void Start()
         {
-            _gm = GameObject.Find("Game Manager").GetComponent<GameManager>();
             _player = GameObject.FindGameObjectWithTag("Player");
             _facingRight = false;
             _followPlayer = false;
@@ -191,14 +189,14 @@ namespace Assets.Scripts
 
             var unvisited = new List<Node>();
 
-            var source = _gm.Graph[_tileX, _tileY];
-            var target = _gm.Graph[x, y];
+            var source = MazeData.Graph[_tileX, _tileY];
+            var target = MazeData.Graph[x, y];
 
             dist[source] = 0;
             prev[source] = null;
 
             // init everything to INFINITE.
-            foreach (var node in _gm.Graph)
+            foreach (var node in MazeData.Graph)
             {
                 if (node != source)
                 {
@@ -231,7 +229,7 @@ namespace Assets.Scripts
                 foreach (var neighbour in u.Neighbours)
                 {
                     float alt;
-                    if (_gm.Graph[neighbour.X, neighbour.Y].Walkable)
+                    if (MazeData.Graph[neighbour.X, neighbour.Y].Walkable)
                     {
                         alt = dist[u] + u.DistanceTo(neighbour);
                     }

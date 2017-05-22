@@ -4,14 +4,15 @@ namespace Assets.Scripts
 {
     public class PlayerManager : MonoBehaviour
     {
-        public float Speed;
-
         [HideInInspector]
         public static bool IsDead;
+
+        public float Speed;
 
         private bool _facingRight;
         private float _speedX;
         private float _speedY;
+
         private Rigidbody2D _rb;
         private Animator _animator;
 
@@ -74,22 +75,6 @@ namespace Assets.Scripts
             }
         }
 
-        private void FlipPlayer()
-        {
-            if (_speedX > 0 && !_facingRight || _speedX < 0 && _facingRight)
-            {
-                _facingRight = !_facingRight;
-                Vector2 temp = transform.localScale;
-                temp.x *= -1;
-                transform.localScale = temp;
-            }
-        }
-
-        private void MovePlayer(float horizontalSpeed, float verticalSpeed)
-        {
-            _rb.velocity = new Vector2(horizontalSpeed, verticalSpeed);
-        }
-
         private void OnTriggerEnter2D(Collider2D other)
         {
             if (other.gameObject.tag.Equals("coin"))
@@ -111,6 +96,22 @@ namespace Assets.Scripts
                 MazeData.Score = 0;
                 MazeData.FinishReason = "eaten by mummy";
             }
+        }
+
+        private void FlipPlayer()
+        {
+            if (_speedX > 0 && !_facingRight || _speedX < 0 && _facingRight)
+            {
+                _facingRight = !_facingRight;
+                Vector2 temp = transform.localScale;
+                temp.x *= -1;
+                transform.localScale = temp;
+            }
+        }
+
+        private void MovePlayer(float horizontalSpeed, float verticalSpeed)
+        {
+            _rb.velocity = new Vector2(horizontalSpeed, verticalSpeed);
         }
 
         private void DisablePlayer()

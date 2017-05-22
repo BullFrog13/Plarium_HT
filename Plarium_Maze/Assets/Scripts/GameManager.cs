@@ -6,14 +6,18 @@ namespace Assets.Scripts
 {
     public class GameManager : MonoBehaviour
     {
+        [Header("Textures settings")]
         public GameObject Coin;
         public GameObject Player;
         public GameObject Zombie;
         public GameObject Mummy;
         public GameObject GroundTile;
         public GameObject WallTile;
-        public GameObject PausePanel;
 
+        [Header("UI settings")]
+        public GameObject GameEndPanel;
+
+        [Header("Maze logic settings")]
         public int MaxCoinCount;
         public float CoinAddingRangeTime;
         public int CoinsNeededForSecondZombieSpawn;
@@ -24,12 +28,18 @@ namespace Assets.Scripts
         private bool _mummyIsEnabled;
         private bool _secondZombieIsEnabled;
         private float _coinTimer;
-        public Node[,] Graph;
 
         private void Awake()
         {
+            // If case we want to test it.
+            if (MazeData.XSize == 0 || MazeData.YSize == 0)
+            {
+                MazeData.XSize = 5;
+                MazeData.YSize = 5;
+            }
+
             ResetValues();
-            PausePanel.SetActive(false);
+            GameEndPanel.SetActive(false);
 
             _mazeHolder = new GameObject { name = "Maze holder" };
            _mazeGenerator = new MazeGenerator();
@@ -50,20 +60,6 @@ namespace Assets.Scripts
             MazeData.GameStarted = DateTime.Now;
         }
 
-        private void ResetValues()
-        {
-            MazeData.Score = 0;
-            MazeData.CurrentCointCount = 0;
-            MazeData.SecondsSpent = 0;
-            MazeData.FinishReason = "Unknown";
-            PlayerManager.IsDead = false;
-        }
-
-        private void StopGame()
-        {
-            PausePanel.SetActive(true);
-        }
-
         private void Update()
         {
             MazeData.SecondsSpent += Time.deltaTime;
@@ -75,9 +71,9 @@ namespace Assets.Scripts
             }
             if (PlayerManager.IsDead)
             {
-                if (!PausePanel.activeInHierarchy)
+                if (!GameEndPanel.activeInHierarchy)
                 {
-                    StopGame();
+                    ShowEndGamePanel();
                     SerializableData.SaveData("data.xml");
                 }
             }
@@ -107,15 +103,20 @@ namespace Assets.Scripts
             }
         }
 
+        private void ShowEndGamePanel()
+        {
+            GameEndPanel.SetActive(true);
+        }
+
         private void GeneratePathfindingGraph()
         {
-            Graph = new Node[MazeData.XSize * 2, MazeData.YSize * 2];
+            MazeData.Graph = new Node[MazeData.XSize * 2, MazeData.YSize * 2];
 
             for (var i = 0; i < MazeData.YSize *2; i++)
             {
                 for (var j = 0; j < MazeData.XSize *2; j++)
                 {
-                    Graph[j, i] = new Node
+                    MazeData.Graph[j, i] = new Node
                     {
                         X = j,
                         Y = i,
@@ -124,6 +125,7 @@ namespace Assets.Scripts
 
                 }
             }
+
             for (var i = 0; i < MazeData.YSize * 2; i++)
             {
                 for (var j = 0; j < MazeData.XSize * 2; j++)
@@ -131,19 +133,22 @@ namespace Assets.Scripts
                     // adding nodes
                     if (j > 0)
                     {
-                        Graph[j, i].Neighbours.Add(Graph[j - 1, i]);
+                        MazeData.Graph[j, i].Neighbours.Add(MazeData.Graph[j - 1, i]);
                     }
+
                     if (j < MazeData.XSize * 2 - 1)
                     {
-                        Graph[j, i].Neighbours.Add(Graph[j + 1, i]);
+                        MazeData.Graph[j, i].Neighbours.Add(MazeData.Graph[j + 1, i]);
                     }
+
                     if (i > 0)
                     {
-                        Graph[j, i].Neighbours.Add(Graph[j, i - 1]);
+                        MazeData.Graph[j, i].Neighbours.Add(MazeData.Graph[j, i - 1]);
                     }
+
                     if (i < MazeData.YSize * 2 - 1)
                     {
-                        Graph[j, i].Neighbours.Add(Graph[j, i + 1]);
+                        MazeData.Graph[j, i].Neighbours.Add(MazeData.Graph[j, i + 1]);
                     }
                 }
             }
@@ -181,6 +186,15 @@ namespace Assets.Scripts
             var availableTiles = GameObject.FindGameObjectsWithTag("ground");
             var randomTileIndex = Random.Range(0, availableTiles.Length);
             return availableTiles[randomTileIndex];
+        }
+
+        private void ResetValues()
+        {
+            MazeData.Score = 0;
+            MazeData.CurrentCointCount = 0;
+            MazeData.SecondsSpent = 0;
+            MazeData.FinishReason = "Unknown";
+            PlayerManager.IsDead = false;
         }
     }
 }

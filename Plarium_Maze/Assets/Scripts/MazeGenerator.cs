@@ -6,8 +6,6 @@ namespace Assets.Scripts
 {
     public class MazeGenerator
     {
-        public Tile[,] Tiles;
-
         private class Cell
         {
             public bool Visited;
@@ -15,6 +13,8 @@ namespace Assets.Scripts
             public int X;
             public int Y;
         }
+
+        public Tile[,] Tiles;
 
         private Cell[] _cells;
         private int _cellsCount;
@@ -63,6 +63,7 @@ namespace Assets.Scripts
                         // 1 represents wall for now
                         Tiles[j, i] = new Tile(j, i, false);
                     }
+
                     // concerning that walls are squares there are some walls inside that cannot be broken
                     if (j != 0 && i != 0 && j % 2 == 0 && i % 2 == 0)
                     {
@@ -93,9 +94,10 @@ namespace Assets.Scripts
 
         private void CreateCells()
         {
-            // this method is just for assigning right walls for right cells for A* Depth algorithm needs
+            // this method is just for assigning right walls for right cells for backtrack algorithm needs
             _cells = new Cell[MazeData.XSize * MazeData.YSize];
             var cellsCounter = 0;
+
             for (var i = 1; i < MazeData.YSize * 2; i++)
             {
                 for (var j = 1; j < MazeData.XSize * 2; j++)
@@ -116,26 +118,27 @@ namespace Assets.Scripts
 
         private void CreateLabyrinth()
         {
-            // implementation of an A* Depth algorithm is beneath
+            // implementation of the BACKTRACK algorithm is beneath
+            var currentPath = new Stack<int>();
 
             var currentCell = PickRandomIntialCell();
             _cells[currentCell].Visited = true;
-            var stack = new Stack<int>();
-            stack.Push(currentCell);
+            currentPath.Push(currentCell);
             var countOfVisitedCells = 1;
 
             while (countOfVisitedCells < _cells.Length)
             {
-                var randomChosenNeighbour = PickRandomNotVisitedCellIndex(stack.Peek());
+                var randomChosenNeighbour = PickRandomNotVisitedCellIndex(currentPath.Peek());
+
                 if (randomChosenNeighbour != -1)
                 {
                     _cells[randomChosenNeighbour].Visited = true;
-                    stack.Push(randomChosenNeighbour);
+                    currentPath.Push(randomChosenNeighbour);
                     countOfVisitedCells++;
                 }
                 else
                 {
-                    stack.Pop();
+                    currentPath.Pop();
                 }
             }
         }
@@ -176,14 +179,17 @@ namespace Assets.Scripts
                         Tiles[cell.X, cell.Y + 1].Walkable = true;
                         Tiles[cell.X, cell.Y + 1].IsBreakableWall = false;
                         return currentCellIndex + MazeData.XSize;
+
                     case Directions.West:
                         Tiles[cell.X - 1, cell.Y].Walkable = true;
                         Tiles[cell.X - 1, cell.Y].IsBreakableWall = false;
                         return currentCellIndex - 1;
+
                     case Directions.East:
                         Tiles[cell.X + 1, cell.Y].Walkable = true;
                         Tiles[cell.X + 1, cell.Y].IsBreakableWall = false;
                         return currentCellIndex + 1;
+
                     case Directions.South:
                         Tiles[cell.X, cell.Y - 1].Walkable = true;
                         Tiles[cell.X, cell.Y - 1].IsBreakableWall = false;
