@@ -6,8 +6,6 @@ namespace Assets.Scripts
 {
     public class GameManager : MonoBehaviour
     {
-        public int XSize;
-        public int YSize;
         public GameObject Coin;
         public GameObject Player;
         public GameObject Zombie;
@@ -35,7 +33,7 @@ namespace Assets.Scripts
 
             _mazeHolder = new GameObject { name = "Maze holder" };
            _mazeGenerator = new MazeGenerator();
-            _mazeGenerator.GenerateMaze(XSize, YSize);
+            _mazeGenerator.GenerateMaze(MazeData.XSize, MazeData.YSize);
             GeneratePathfindingGraph();
             VisualizeLabyrinth();
 
@@ -111,11 +109,11 @@ namespace Assets.Scripts
 
         private void GeneratePathfindingGraph()
         {
-            Graph = new Node[XSize * 2, YSize * 2];
+            Graph = new Node[MazeData.XSize * 2, MazeData.YSize * 2];
 
-            for (var i = 0; i < YSize*2; i++)
+            for (var i = 0; i < MazeData.YSize *2; i++)
             {
-                for (var j = 0; j < XSize*2; j++)
+                for (var j = 0; j < MazeData.XSize *2; j++)
                 {
                     Graph[j, i] = new Node
                     {
@@ -126,16 +124,16 @@ namespace Assets.Scripts
 
                 }
             }
-            for (var i = 0; i < YSize * 2; i++)
+            for (var i = 0; i < MazeData.YSize * 2; i++)
             {
-                for (var j = 0; j < XSize * 2; j++)
+                for (var j = 0; j < MazeData.XSize * 2; j++)
                 {
                     // adding nodes
                     if (j > 0)
                     {
                         Graph[j, i].Neighbours.Add(Graph[j - 1, i]);
                     }
-                    if (j < XSize * 2 - 1)
+                    if (j < MazeData.XSize * 2 - 1)
                     {
                         Graph[j, i].Neighbours.Add(Graph[j + 1, i]);
                     }
@@ -143,7 +141,7 @@ namespace Assets.Scripts
                     {
                         Graph[j, i].Neighbours.Add(Graph[j, i - 1]);
                     }
-                    if (i < YSize * 2 - 1)
+                    if (i < MazeData.YSize * 2 - 1)
                     {
                         Graph[j, i].Neighbours.Add(Graph[j, i + 1]);
                     }
@@ -153,9 +151,9 @@ namespace Assets.Scripts
 
         private void VisualizeLabyrinth()
         {
-            for (var i = 0; i <= YSize * 2; i++)
+            for (var i = 0; i <= MazeData.YSize * 2; i++)
             {
-                for (var j = 0; j <= XSize * 2; j++)
+                for (var j = 0; j <= MazeData.XSize * 2; j++)
                 {
                     bool isWalkable = _mazeGenerator.Tiles[j, i].Walkable;
                     var tempTile = Instantiate(isWalkable ? GroundTile : WallTile, new Vector3(i, j, 0), Quaternion.identity);

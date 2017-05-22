@@ -11,6 +11,8 @@ namespace Assets.Scripts
 {
     public class MainMenuManager : MonoBehaviour
     {
+        private const string GameSceneName = "Game";
+
         public Text ScorePanel;
         public InputField InputField;
 
@@ -23,9 +25,25 @@ namespace Assets.Scripts
             InputField.onValueChanged.AddListener(delegate { ChangeName(); });
         }
 
-        public void StartGame(string gameSceneName)
+        public void StartSmallMaze()
         {
-            SceneManager.LoadScene(gameSceneName);
+            MazeData.XSize = 5;
+            MazeData.YSize = 5;
+            SceneManager.LoadScene(GameSceneName);
+        }
+
+        public void StartMiddleMiddle()
+        {
+            MazeData.XSize = 10;
+            MazeData.YSize = 10;
+            SceneManager.LoadScene(GameSceneName);
+        }
+
+        public void StartBigMaze()
+        {
+            MazeData.XSize = 15;
+            MazeData.YSize = 15;
+            SceneManager.LoadScene(GameSceneName);
         }
 
         public void ExitGame()
@@ -60,7 +78,7 @@ namespace Assets.Scripts
                     {
                         var sb = new StringBuilder();
                         sb.AppendFormat(
-                            "\nPlayer {0} started at {1} and played {2} scored {3} and exited because was {4}\n",
+                            "\nPlayer {0} started at {1} and played {2} seconds, scored {3} and exited because was {4}\n",
                             item.Name, item.GameStarted, item.SecondSpent, item.Score, item.FinishReason);
                         ScorePanel.text += sb;
                     }

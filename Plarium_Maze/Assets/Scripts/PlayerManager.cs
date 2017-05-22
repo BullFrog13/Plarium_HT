@@ -102,14 +102,14 @@ namespace Assets.Scripts
             {
                 IsDead = true;
                 DisablePlayer();
-                MazeData.FinishReason = "Eaten by zombie";
+                MazeData.FinishReason = "eaten by zombie";
             }
             if (other.gameObject.tag.Equals("mummy"))
             {
                 IsDead = true;
                 DisablePlayer();
                 MazeData.Score = 0;
-                MazeData.FinishReason = "Eaten by mummy";
+                MazeData.FinishReason = "eaten by mummy";
             }
         }
 
